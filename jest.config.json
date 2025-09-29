@@ -1,0 +1,44 @@
+{
+  "preset": "react-native",
+  "globals": {
+    "ts-jest": {
+      "babelConfig": true,
+      "diagnostics": true
+    }
+  },
+  "transform": {
+    "^.+\\.tsx?$": "ts-jest"
+  },
+  "transformIgnorePatterns": [
+    "node_modules/(?!(react-native|@react-native|@amazon-devices/kepler-ui-components|@amazon-devices/react-linear-gradient|@amazon-devices/react-native-kepler|@amazon-devices/lottie-react-native|iso-639-3)/)"
+  ],
+  "modulePathIgnorePatterns": ["src/w3cmedia/shakaplayer/dist/"],
+  "testRegex": "/tst/.*\\.(test|spec)\\.(ts|tsx|js)$",
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "moduleNameMapper": {
+    "^~/(.*)$": "<rootDir>/src/$1"
+  },
+
+  "coverageDirectory": "<rootDir>/coverage",
+  "collectCoverageFrom": [
+    "src/**/*",
+    "!**/index.{ts,js,tsx}",
+    "!**/types.ts",
+    "!src/**/*.d.ts"
+  ],
+  "collectCoverage": true,
+  "coverageReporters": [
+    "json",
+    "json-summary",
+    "lcov",
+    "text",
+    "clover",
+    "cobertura"
+  ],
+
+  "setupFiles": [
+    "./node_modules/@amazon-devices/react-native-kepler/jest/setup.js",
+    "./node_modules/react-native/jest/setup.js"
+  ],
+  "setupFilesAfterEnv": ["<rootDir>/jest.setup.ts"]
+}

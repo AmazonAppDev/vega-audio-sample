@@ -1,0 +1,106 @@
+{
+  "name": "@amazon-devices/kepleraudioreferenceapp",
+  "version": "2.21.0",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf build bundle kepler-build generated logs dist node_modules package-lock.json coverage",
+    "build": "npm-run-all compile lint test",
+    "test:snapshot": "jest --colors --updateSnapshot",
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest --colors --coverage",
+    "lint": "eslint src --ext .ts,.tsx && eslint tst --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix && eslint tst --ext .ts,.tsx --fix",
+    "compile": "tsc -p tsconfig.json",
+    "app:install": "kepler device install-app --dir .",
+    "app:launch": "kepler device launch-app",
+    "app:build:debug": "run-s build:debug && npm run app:install && npm run app:launch -- -b Debug",
+    "app:build": "run-s build:release && npm run app:install && npm run app:launch -- -b Release",
+    "create-bundle-dirs:debug": "mkdir -p build/lib/rn-bundles/Debug/",
+    "bundle-kepler:debug": "react-native bundle --platform kepler --entry-file index.js --bundle-output build/lib/rn-bundles/Debug/index.bundle --assets-dest build/lib/rn-bundles/Debug/ --sourcemap-output build/lib/rn-bundles/Debug/index.bundle.map",
+    "hermes-kepler:debug": "react-native hermes-kepler --bundle-path build/lib/rn-bundles/Debug/index.bundle --out build/lib/rn-bundles/Debug/index.hermes.bundle",
+    "build:js:debug": "run-s create-bundle-dirs:debug bundle-kepler:debug hermes-kepler:debug",
+    "create-bundle-dirs:release": "mkdir -p build/lib/rn-bundles/Release/ && mkdirp build/private/debugging/Release/",
+    "bundle-kepler:release": "react-native bundle --platform kepler --entry-file index.js --dev false --bundle-output build/lib/rn-bundles/Release/index.bundle --assets-dest build/lib/rn-bundles/Release/ --sourcemap-output build/private/debugging/Release/index.bundle.map",
+    "hermes-kepler:release": "react-native hermes-kepler --bundle-path build/lib/rn-bundles/Release/index.bundle --out build/lib/rn-bundles/Release/index.hermes.bundle",
+    "build:js:release": "run-s create-bundle-dirs:release bundle-kepler:release hermes-kepler:release",
+    "build:native:debug": "kepler build -b Debug",
+    "build:debug": "run-s build:js:debug build:native:debug",
+    "build:native:release": "kepler build -b Release",
+    "build:release": "run-s build:js:release build:native:release",
+    "build:app": "run-s build build:debug build:release",
+    "build:native": "kepler build -b Debug -b Release",
+    "build:module": "run-s build build:native",
+    "prepack": "run-s build:module"
+  },
+  "dependencies": {
+    "@amazon-devices/kepler-media-controls": "^1.0.0",
+    "@amazon-devices/kepler-media-types": "^1.0.0",
+    "@amazon-devices/keplerscript-react-native-reanimated": "~2.0.0",
+    "@amazon-devices/react-native-kepler": "~2.0.0",
+    "@amazon-devices/react-native-safe-area-context": "~2.0.0",
+    "@amazon-devices/react-native-screens": "~2.0.0",
+    "@amazon-devices/react-native-w3cmedia": "~2.1.0",
+    "@amazon-devices/react-navigation__core": "~2.0.0",
+    "@amazon-devices/react-navigation__drawer": "~2.0.0",
+    "@amazon-devices/react-navigation__native": "~2.0.0",
+    "@amazon-devices/react-navigation__stack": "~2.0.0",
+    "@amazon-devices/react-native-vector-icons": "~2.0.0",
+    "@amazon-devices/kepler-ui-components": "^2.0.0",
+    "base-64": "^1.0.0",
+    "lodash": "^4.17.21",
+    "moment": "*",
+    "react": "18.2.0",
+    "react-native": "0.72.0",
+    "react-native-gesture-handler": "npm:@amazon-devices/react-native-gesture-handler@~2.0.0",
+    "web-streams-polyfill": "^3.2.1",
+    "xmldom": "*"
+  },
+  "kepler": {
+    "projectType": "application",
+    "appName": "kepleraudioreferenceapp",
+    "targets": [
+      "tv"
+    ],
+    "os": [
+      "vega"
+    ]
+  },
+  "devDependencies": {
+    "@amazon-devices/kepler-cli-platform": "^0",
+    "@babel/core": "^7.22.8",
+    "@babel/runtime": "^7.22.8",
+    "@react-native-community/eslint-config": "^3.0.1",
+    "@react-native/eslint-config": "^0.72.2",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "prettier-plugin-organize-imports": "^3.2.4",
+    "@react-native/metro-config": "^0.72.6",
+    "@testing-library/react-native": "^11.5.4",
+    "@types/jest": "^28.0.0",
+    "@types/lodash": "^4.14.196",
+    "@types/react-test-renderer": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.18.0",
+    "babel-jest": "^28.0.0",
+    "eslint": "^8.19.0",
+    "eslint-plugin-simple-import-sort": "^5.0.3",
+    "jest": "^28.0.0",
+    "metro-react-native-babel-preset": "^0.76.5",
+    "mustache": "^4.2.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.8.8",
+    "react-test-renderer": "18.2.0",
+    "ts-jest": "^28.0.0",
+    "typescript": "^4.8.4"
+  },
+  "resolutions": {
+    "@types/react": "^18"
+  },
+  "eslintConfig": {
+    "extends": "@react-native",
+    "root": true,
+    "ignorePatterns": [
+      "src/w3cmedia/shakaplayer/dist/"
+    ]
+  }
+}

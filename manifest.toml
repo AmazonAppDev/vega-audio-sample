@@ -1,0 +1,79 @@
+# 
+# Copyright (c) 2025 Amazon.com, Inc. or its affiliates.  All rights reserved.
+# 
+# PROPRIETARY/CONFIDENTIAL.  USE IS SUBJECT TO LICENSE TERMS.
+# 
+schema-version = 1
+
+[package]
+title = "Vega Audio Sample App"
+version = "2.21.0"
+id = "com.amazondeveloper.kepleraudioreferenceapp"
+icon = "@image/audio-app-dark.png"
+
+## The [components] section declares the application components in the package, including interactive, service, and task components. 
+[components]
+[[components.interactive]]
+id = "com.amazondeveloper.kepleraudioreferenceapp.main"
+runtime-module = "/com.amazon.kepler.keplerscript.runtime.loader_2@IKeplerScript_2_0"
+categories = ["com.amazon.category.main", "com.amazon.category.kepler.media"]
+launch-type = "singleton"
+
+## The [needs] section declares the system capabilities that the application requires to function on a Vega device. This information helps Vega package manager and Amazon Appstore to ensure the application is installed on the supported devices. Carefully declare the application's needs for your desired device targeting. You can choose a combination of needs and wants to maximize your device reach, while providing enhanced features on applicable devices.
+[needs]
+[[needs.module]]
+id = "/com.amazon.kepler.media.control.server@IMediaControlServerComponentAsync"
+
+## The [wants] section declares the capabilities that are optional for the application to function on a Vega device. Handle graceful fallbacks in your application code if a feature in this list is unavailable on a device.
+[wants]
+[[wants.service]]
+id = "com.amazon.gipc.uuid.*"
+
+[[wants.service]]
+id = "com.amazon.media.server"
+
+[[wants.service]] 
+id = "com.amazon.media.playersession.service"
+
+[[wants.service]]
+id = "com.amazon.mediametrics.service"
+
+[[wants.service]]
+id = "com.amazon.audio.stream"
+
+[[wants.service]] 
+id = "com.amazon.audio.control"
+
+[[wants.service]] 
+id = "com.amazon.audio.system"
+
+[[wants.service]]
+id = "com.amazon.mediabuffer.service"
+  		  
+[[wants.service]]
+id = "com.amazon.mediatransform.service"
+
+
+## The [offers] section declares the capabilities that an application package offers to other application packages installed on a Vega OS system. Offers is an optional section.
+[offers]
+[[offers.service]]
+id = "com.amazon.gipc.uuid.*"
+
+#The [[extras]] section contains key-value pairs to describe custom meta-data associated with the package or a component in the package. Extras are optional.
+[[extras]]
+key = "interface.provider"
+component-id = "com.amazondeveloper.kepleraudioreferenceapp.main"
+
+[[extras.value.application.interface]]
+interface_name = "com.amazon.kepler.media.IMediaPlaybackServer"
+command_options = [
+    "Play",
+    "Pause",
+    "StartOver",
+    "Previous",
+    "Next",
+    "SkipForward",
+    "SkipBackward",
+]
+attribute_options = ["AudioAdvanceMuted"]
+features = ["AdvancedSeek", "VariableSpeed", "AudioTracks", "TextTracks"]

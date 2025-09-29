@@ -1,0 +1,8 @@
+{
+  "//": "The declared app name must follow this pattern to be KRL-compatible",
+  "name": "com.amazondeveloper.kepleraudioreferenceapp.main",
+  "displayName": "Vegaaudioreferenceapp",
+  "reactNativeAppComponentName": "Vegaaudioreferenceapp",
+  "appId": "com.amazondeveloper.kepleraudioreferenceapp.main",
+  "windowTitle": "VegaAudioReferenceApp"
+}
