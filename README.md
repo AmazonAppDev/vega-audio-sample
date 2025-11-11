@@ -24,7 +24,13 @@ Build and run the app
 
 ### Prerequisites
 
-Before you launch the sample app, make sure that you have [installed the Vega Developer Tools](https://developer.amazon.com/docs/vega/0.21/install-vega-sdk.html).
+Before you launch the sample app, make sure that you have:
+
+1. [Installed the Vega Developer Tools](https://developer.amazon.com/docs/vega/0.21/install-vega-sdk.html)
+2. **Java Runtime Environment (JRE) or Java Development Kit (JDK)** - Required by Shaka Player's build system for JavaScript compilation and optimization
+3. **Python** - Required by Shaka Player's build scripts
+
+**Note**: The Shaka Player integration runs automatically during `npm install` and requires these dependencies. If you encounter build errors related to Java or Python, install the missing prerequisites and run `npm install` again. For any other prerequisite Shaka issue please visit: https://shaka-project.github.io/shaka-player/docs/api/tutorial-welcome.html.
 
 ### Step 1: Build the app
 
@@ -373,9 +379,23 @@ For more details about this vega supported library, see [TVFocusGuideView](https
 Release Notes
 -------------
 
+---
+
+### v0.22
+
+#### Shaka Player Integration Updates
+
+* **Automated Shaka Player Integration** - Updated Shaka Player setup and build process:
+  - Shaka Player integration now occurs during post-install process, downloading source from Shaka GitHub repository to reduce source code base size.
+  - Shaka patches for Vega are applied automatically after the download process.
+
+---
+
 ### v0.21
 
 - Initial release.
+
+---
 
 License
 -------------

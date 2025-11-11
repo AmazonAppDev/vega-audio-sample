@@ -13,12 +13,6 @@ export type MimeType =
 
 export type AudioFormat = 'MPD' | 'HLS' | 'MP4' | 'DASH';
 
-interface DrmScheme {
-  name: string;
-  licenseUri: string;
-  headerTag?: string;
-  headerData?: string;
-}
 interface TextTrack {
   label: string;
   language: string;
@@ -30,10 +24,15 @@ export interface AudioSource {
   title: string;
   uri: string;
   format: AudioFormat;
-  drmScheme?: DrmScheme;
   textTrack?: TextTrack[];
-  uhd: boolean;
   secure: boolean;
-  aCodec?: string;
-  vCodec?: string;
+
+  acodec?: string;
+  vcodec?: string;
+
+  drm_scheme?: string;
+  drm_license_uri?: string;
+
+  drm_license_header?: Array<[string, string]>;
+  manifest_header?: Array<[string, string]>;
 }

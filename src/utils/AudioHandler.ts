@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Amazon.com, Inc. or its affiliates.  All rights reserved.
+ * Copyright (c) 2025 Amazon.com, Inc. or its affiliates.  All rights reserved.
  *
  * PROPRIETARY/CONFIDENTIAL. USE IS SUBJECT TO LICENSE TERMS.
  */
@@ -29,6 +29,7 @@ import { MUSIC_ICON } from '../Constants';
 import { AudioContext } from '../store/AudioProvider';
 import { TrackInfo } from '../types/AudioDataTypes';
 import { ShakaPlayer } from '../w3cmedia/shakaplayer/ShakaPlayer';
+import { ShakaPlayerSettings } from '../w3cmedia/shakaplayer/ShakaTypes';
 import { AppOverrideMediaControlHandler } from './AppOverrideMediaControlHandler';
 
 /**
@@ -283,7 +284,11 @@ export const useAudioHandler = ({
   const loadAdaptivePlayerData = () => {
     if (audioRef?.current) {
       console.log('Creating new Audio Player - Shakaplayer');
-      player.current = new ShakaPlayer(audioRef.current); // Create ShakaPlayer instance
+      const defaultSettings: ShakaPlayerSettings = {
+        secure: false,
+        abrEnabled: false,
+      };
+      player.current = new ShakaPlayer(audioRef.current, defaultSettings); // Create ShakaPlayer instance
       player?.current.load(getContentData(), false); // Load adaptive content
     }
   };
@@ -473,7 +478,8 @@ export const useAudioHandler = ({
     return {
       secure: false, // Non-DRM content
       uri: audioTrackRef.current?.audioURL, // Stream URL
-      uhd: false, // Not ultra-high definition
+      acodec: 'mp3',
+      vcodec: undefined,
     };
   };
 

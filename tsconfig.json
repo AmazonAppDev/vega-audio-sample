@@ -42,7 +42,6 @@
     // "paths": {},                           /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */
     "typeRoots": [
-      "src/w3cmedia/shakaplayer",
       "node_modules/@types"
     ] /* List of folders to include type definitions from. */,
     // "types": [],                           /* Type declaration files to be included in compilation. */
@@ -67,6 +66,7 @@
     "babel.config.js",
     "metro.config.js",
     "jest.config.js",
-    "src/w3cmedia/shakaplayer/dist/wrapper.js"
+    "src/w3cmedia/shakaplayer/dist/**/*",
+    "shaka-setup/**/*"
   ]
 }

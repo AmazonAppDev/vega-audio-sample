@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2022 - 2025 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -12,27 +12,20 @@
  * FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
  */
 
-import { HTMLMediaElement } from '@amazon-devices/react-native-w3cmedia';
+// @ts-nocheck
+import { HTMLMediaElement } from '@amazon-devices/react-native-w3cmedia/dist/headless';
 import { Platform } from 'react-native';
-// @ts-ignore
-import shaka from './dist/shaka-player.compiled';
-// import polyfills
 import { AudioSource } from '../../types/AudioSource';
+import shaka from './dist/shaka-player.compiled';
+import { PlayerInterface, ShakaPlayerSettings } from './ShakaTypes';
+
+// import polyfills
 import Document from '../polyfills/DocumentPolyfill';
+import DOMParserPolyfill from '../polyfills/DOMParserPolyfill';
 import Element from '../polyfills/ElementPolyfill';
 import MiscPolyfill from '../polyfills/MiscPolyfill';
 import TextDecoderPolyfill from '../polyfills/TextDecoderPolyfill';
 import W3CMediaPolyfill from '../polyfills/W3CMediaPolyfill';
-import { PlayerInterface, ServerMap, ShakaPlayerSettings } from './ShakaTypes';
-
-const DEFAULT_ABR_WIDTH: number = Platform.isTV ? 3840 : 1919;
-const DEFAULT_ABR_HEIGHT: number = Platform.isTV ? 2160 : 1079;
-const DEFAULT_SHAKA_SETTINGS: ShakaPlayerSettings = {
-  secure: false, // Playback goes through secure or non-secure mode
-  abrEnabled: true, // Enables Adaptive Bit-Rate (ABR) switching
-  abrMaxWidth: DEFAULT_ABR_WIDTH, // Maximum width allowed for ABR
-  abrMaxHeight: DEFAULT_ABR_HEIGHT, // Maximum height allowed for ABR
-};
 
 // install polyfills
 Document.install();
@@ -40,10 +33,27 @@ Element.install();
 TextDecoderPolyfill.install();
 W3CMediaPolyfill.install();
 MiscPolyfill.install();
+DOMParserPolyfill.install();
+
+const playerName: string = 'shaka';
+const playerVersion: string = '4.8.5';
+
 export class ShakaPlayer implements PlayerInterface {
   player: shaka.Player;
-  private settings: ShakaPlayerSettings;
-  private mediaElement: HTMLMediaElement;
+  private setting_: ShakaPlayerSettings;
+  private mediaElement: HTMLMediaElement | null;
+
+  static readonly enableNativeParsing = false;
+  static readonly enableNativeXmlParsing = false;
+
+  constructor(
+    mediaElement: HTMLMediaElement | null,
+    setting: ShakaPlayerSettings,
+  ) {
+    this.mediaElement = mediaElement;
+    this.setting_ = setting;
+  }
+
   // Custom callbacks {{{
   // This whole section is a port from shakaplayer demo app
   /**
@@ -54,10 +64,6 @@ export class ShakaPlayer implements PlayerInterface {
    */
   private lastUplynkPrefix: string = '';
 
-  constructor(mediaElement: HTMLMediaElement, settings?: ShakaPlayerSettings) {
-    this.mediaElement = mediaElement;
-    this.settings = { ...DEFAULT_SHAKA_SETTINGS, ...settings };
-  }
   /**
    * A response filter for VDMS Uplynk manifest responses.
    * This allows us to get the license prefix that is necessary
@@ -134,9 +140,136 @@ export class ShakaPlayer implements PlayerInterface {
       request.headers[key] = value;
     });
   }
+
+  /**
+   * @param {!Map.<string, string>} headers
+   * @param {shaka.net.NetworkingEngine.RequestType} requestType
+   * @param {shaka.extern.Request} request
+   * @private
+   */
+  addManifestRequestHeaders_(
+    headers: Map<string, string>,
+    requestType: shaka.net.NetworkingEngine.RequestType,
+    request: shaka.extern.Request,
+  ) {
+    if (
+      requestType === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+      requestType === shaka.net.NetworkingEngine.RequestType.SEGMENT
+    ) {
+      // Add these to the existing headers.  Do not clobber them!
+      headers.forEach((value, key) => {
+        request.headers[key] = value;
+      });
+    }
+  }
+
+  async nativeParsePlaylist(
+    manifest: ArrayBuffer,
+    absoluteuri: string,
+  ): Array<shaka.hls.Playlist> {
+    console.log('shaka: nativeParsePlaylist+');
+    const playlist = await global.parseHlsManifest(
+      playerName,
+      playerVersion,
+      absoluteuri,
+      manifest,
+      shaka,
+    );
+    console.log('shaka: nativeParsePlaylist-');
+    return playlist;
+  }
+
+  nativeParseFromString(
+    manifest: ArrayBuffer,
+    expectedRoot: string,
+  ): Array<shaka.hls.Playlist> {
+    console.log('shaka: nativeParseFromString+');
+    console.log('shaka: nativeParseFromString: expectedRoot ', expectedRoot);
+    const playlist = global.nativeParseFromString(manifest, expectedRoot);
+    console.log('shaka: nativeParseFromString-');
+    return playlist;
+  }
+
   // End custom callbacks }}}
 
   load(content: AudioSource, _autoplay: boolean): void {
+    if (ShakaPlayer.enableNativeParsing) {
+      if (
+        global.registerNativePlayerUtils &&
+        shaka.hls.HlsParser.setNativeFunctions
+      ) {
+        console.log('shakaplayer: registerNativePlayerUtils found');
+        if (!global.isNativeHlsParserSupported) {
+          const ret = global.registerNativePlayerUtils();
+          console.log('shaka: native functions registered: ' + ret);
+        }
+        if (
+          global.isNativeHlsParserSupported &&
+          global.parseHlsManifest &&
+          global.nativeShakaHlsCreateSegments
+        ) {
+          const nativeHlsParserSupported = global.isNativeHlsParserSupported(
+            playerName,
+            playerVersion,
+          );
+          if (nativeHlsParserSupported) {
+            console.log('shaka: setting native functions');
+            shaka.hls.HlsParser.setNativeFunctions(this.nativeParsePlaylist);
+          } else {
+            console.log(
+              'shaka: nativeHlsParser not supported for player version',
+            );
+          }
+        } else {
+          console.log(
+            'shaka: native func not set even after register, skipping it',
+          );
+        }
+      } else {
+        console.log(`shakaplayer: native offload not enabled!
+registerNativePlayerUtils: ${!!global.registerNativePlayerUtils},
+setNativeFunctions: ${!!shaka.hls.HlsParser.setNativeFunctions}`);
+      }
+    } else {
+      console.log('shaka: native playlist parsing is disabled');
+    }
+
+    if (ShakaPlayer.enableNativeXmlParsing) {
+      // For Dash content
+      if (
+        global.registerNativePlayerUtils &&
+        shaka.util.XmlUtils.setNativeFunctions
+      ) {
+        if (!global.isNativeXmlParserSupported) {
+          console.log('shaka: isNativeXmlParserSupported not registered.');
+        }
+        if (global.isNativeXmlParserSupported && global.nativeParseFromString) {
+          const isNativeXmlParserSupported = global.isNativeXmlParserSupported(
+            playerName,
+            playerVersion,
+          );
+          if (isNativeXmlParserSupported) {
+            console.log('shaka: setting DASH native functions');
+            shaka.util.XmlUtils.setNativeFunctions(this.nativeParseFromString);
+          } else {
+            console.log(
+              'shaka: nativeXMLParser not supported for player version',
+            );
+          }
+        } else {
+          console.log(
+            'shaka: native func not set even after register, skipping it',
+          );
+        }
+      } else {
+        console.log(`shakaplayer: DASH native offload not enabled!
+registerNativePlayerUtils: ${!!global.registerNativePlayerUtils},
+DASH::setNativeFunctions: ${!!shaka.util.XmlUtils.setNativeFunctions}`);
+      }
+    } else {
+      console.log('shaka: native Xml playlist parsing is disabled');
+    }
+
     shaka.polyfill.installAll();
     console.log('shakaplayer: unregistering scheme http and https');
     shaka.net.NetworkingEngine.unregisterScheme('http');
@@ -172,17 +305,36 @@ export class ShakaPlayer implements PlayerInterface {
     netEngine.registerResponseFilter(this.uplynkResponseFilter);
 
     // This filter is needed for Axinom streams.
-    if (content.drmScheme?.headerTag && content.drmScheme.headerData) {
-      console.log(
-        `sample:shaka: got License header TAG: ${content.drmScheme.headerTag} DATA: ${content.drmScheme.headerData}`,
-      );
+    if (content.drm_license_header) {
       let header_map: Map<string, string> = new Map();
-      header_map.set(content.drmScheme.headerTag, content.drmScheme.headerData);
+      content.drm_license_header.map(values => {
+        console.log(
+          `sample:shaka: got License header TAG: ${values[0]} DATA: ${values[1]}`,
+        );
+        header_map.set(values[0] as string, values[1] as string);
+      });
       const filter = (
         type: shaka.net.NetworkingEngine.RequestType,
         request: shaka.extern.Request,
       ): void => {
         return this.addLicenseRequestHeaders_(header_map, type, request);
+      };
+      netEngine.registerRequestFilter(filter);
+    }
+
+    if (content.manifest_header) {
+      let header_map: Map<string, string> = new Map();
+      content.manifest_header.map(values => {
+        console.log(
+          `sample:shaka: got Manifest header TAG: ${values[0]} DATA: ${values[1]}`,
+        );
+        header_map.set(values[0] as string, values[1] as string);
+      });
+      const filter = (
+        type: shaka.net.NetworkingEngine.RequestType,
+        request: shaka.extern.Request,
+      ): void => {
+        return this.addManifestRequestHeaders_(header_map, type, request);
       };
       netEngine.registerRequestFilter(filter);
     }
@@ -194,29 +346,30 @@ export class ShakaPlayer implements PlayerInterface {
       console.log(
         'shakaplayer: For non-TV devices, max resolution is capped to FHD.',
       );
-      this.settings.abrMaxWidth = Math.min(
+      this.setting_.abrMaxWidth = Math.min(
         1919,
-        this.settings.abrMaxWidth as number,
+        this.setting_.abrMaxWidth as number,
       );
-      this.settings.abrMaxHeight = Math.min(
+      this.setting_.abrMaxHeight = Math.min(
         1079,
-        this.settings.abrMaxHeight as number,
+        this.setting_.abrMaxHeight as number,
       );
     }
 
     console.log(
-      `ABR Max Resolution: ${this.settings.abrMaxWidth} x ${this.settings.abrMaxHeight}`,
+      `ABR Max Resolution: ${this.setting_.abrMaxWidth} x ${this.setting_.abrMaxHeight}`,
     );
 
     this.player.configure({
-      preferredVideoCodecs: [content.vCodec],
-      preferredAudioCodecs: [content.aCodec],
+      preferredVideoCodecs: content.vcodec ? [content.vcodec] : [],
+      preferredAudioCodecs: content.acodec ? [content.acodec] : [],
       streaming: {
         lowLatencyMode: false,
         inaccurateManifestTolerance: 0,
         rebufferingGoal: 0.01,
-        bufferingGoal: 10,
+        bufferingGoal: 5,
         bufferBehind: 10,
+        alwaysStreamText: true,
         retryParameters: {
           maxAttempts: 3,
         },
@@ -225,35 +378,34 @@ export class ShakaPlayer implements PlayerInterface {
         dash: {
           disableXlinkProcessing: true,
         },
+        hls: {
+          sequenceMode: false,
+        },
       },
       abr: {
-        enabled: this.settings.abrEnabled,
+        enabled: this.setting_.abrEnabled,
         restrictions: {
           minWidth: 320,
           minHeight: 240,
-          maxWidth: this.settings.abrMaxWidth,
-          maxHeight: this.settings.abrMaxHeight,
+          maxWidth: this.setting_.abrMaxWidth,
+          maxHeight: this.setting_.abrMaxHeight,
         },
       },
+      autoShowText: shaka.config.AutoShowText.ALWAYS,
     });
 
     // Separating the drm configuration since Shaka seems to call drm operations even if they are not needed when drm configuration is present.
-    if (
-      content.drmScheme &&
-      content.drmScheme.name !== null &&
-      content.drmScheme.name !== ''
-    ) {
+    if (content.drm_scheme && content.drm_license_uri) {
       console.log(
-        `shakaplayer: loading with ${content.drmScheme} and ${content.drmScheme.licenseUri} and ${content.secure}`,
+        `shakaplayer: loading with ${content.drm_scheme} and ${content.drm_license_uri} and ${content.secure}`,
       );
       let signal_secure: string = 'SW_SECURE_CRYPTO';
       let audio_not_secure: string = 'SW_SECURE_CRYPTO';
-      if (content.drmScheme.name === 'com.microsoft.playready') {
+      if (content.drm_scheme === 'com.microsoft.playready') {
         signal_secure = '150';
       }
-
       if (content.secure === true) {
-        if (content.drmScheme.name === 'com.microsoft.playready') {
+        if (content.drm_scheme === 'com.microsoft.playready') {
           signal_secure = '3000';
         } else {
           signal_secure = 'HW_SECURE_ALL';
@@ -261,15 +413,15 @@ export class ShakaPlayer implements PlayerInterface {
       }
 
       console.log(
-        `shakaplayer: loading with ${content.drmScheme} and ${content.drmScheme.licenseUri} and ${signal_secure}`,
+        `shakaplayer: loading with ${content.drm_scheme} and ${content.drm_license_uri} and ${signal_secure}`,
       );
 
       // For some reason, shaka does not like to use drm_scheme as a key for the map passed as object to configure call.
       // We are forced to create the map and then pass to configure call as in below.
-      let server_map: ServerMap = {};
-      server_map[content.drmScheme.name] = content.drmScheme.licenseUri;
+      let server_map: Map<string, string> = {};
+      server_map[content.drm_scheme as string] =
+        content.drm_license_uri as string;
       this.player.configure('drm.servers', server_map);
-
       this.player.configure({
         drm: {
           advanced: {
@@ -284,36 +436,62 @@ export class ShakaPlayer implements PlayerInterface {
               persistentStateRequired: false,
             },
           },
-          preferredKeySystems: [content.drmScheme.name],
+          preferredKeySystems: [content.drm_scheme],
         },
       });
     }
 
-    this.player.load(content.uri);
+    this.internalLoad(content);
+    console.log('shakaplayer: load() OUT');
+  }
+
+  private async internalLoad(content: AudioSource) {
+    await this.player.load(content.uri);
+    console.log('shakaplayer: setTextTrackVisibility');
+    this.player.setTextTrackVisibility(true);
     console.log('shakaplayer: loaded');
   }
+
   play(): void {
     this.mediaElement?.play();
   }
+
   pause(): void {
     this.mediaElement?.pause();
   }
+
   seekBack(): void {
     const time = this.mediaElement.currentTime;
     console.log('shakaplayer: seekBack to ', time - 10);
     this.mediaElement.currentTime = time - 10;
   }
+
   seekFront(): void {
     const time = this.mediaElement.currentTime;
     console.log('shakaplayer: seekFront to ', time + 10);
     this.mediaElement.currentTime = time + 10;
   }
 
-  async unload() {
-    console.info('Detaching Shaka Player');
-    await this.player.detach();
-    console.info('Destroying Shaka Player');
-    await this.player.destroy();
+  unload(): void {
+    console.log('shakaplayer:unload');
+    if (
+      ShakaPlayer.enableNativeXmlParsing &&
+      global.isNativeXmlParserSupported &&
+      global.nativeParseFromString &&
+      global.unloadNativeXmlParser
+    ) {
+      const isNativeXmlParserSupported = global.isNativeXmlParserSupported(
+        playerName,
+        playerVersion,
+      );
+      if (isNativeXmlParserSupported) {
+        console.log('shakaplayer: unloading native Xml parser');
+        global.unloadNativeXmlParser();
+        console.log('shakaplayer: unloaded native Xml parser');
+      }
+    }
+    this.player.detach();
+    this.player.destroy();
     this.player = null;
   }
 }

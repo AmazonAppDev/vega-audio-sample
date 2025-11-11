@@ -287,7 +287,7 @@ describe('useAudioHandler', () => {
     const mockUnloadError = new Error('Unload error');
     const mockUnload = jest.fn().mockRejectedValueOnce(mockUnloadError);
 
-    (ShakaPlayer as jest.Mock).mockImplementationOnce(() => ({
+    (ShakaPlayer as unknown as jest.Mock).mockImplementationOnce(() => ({
       load: jest.fn(),
       unload: mockUnload,
     }));
@@ -310,6 +310,10 @@ describe('useAudioHandler', () => {
       result.current.audioRef.current = new AudioPlayer();
       result.current.player.current = new ShakaPlayer(
         result.current.audioRef.current,
+        {
+          secure: false,
+          abrEnabled: false,
+        },
       );
     });
 
