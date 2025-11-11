@@ -1,79 +1,186 @@
-# 
-# Copyright (c) 2025 Amazon.com, Inc. or its affiliates.  All rights reserved.
-# 
-# PROPRIETARY/CONFIDENTIAL.  USE IS SUBJECT TO LICENSE TERMS.
-# 
+#
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
 schema-version = 1
 
 [package]
-title = "Vega Audio Sample App"
-version = "2.22.0"
-id = "com.amazondeveloper.kepleraudioreferenceapp"
-icon = "@image/audio-app-dark.png"
+title = "Vega Sports Sample App"
+version = "0.22.0"
+id = "com.amazondeveloper.keplersportapp"
+icon = "@image/SportsApp.png"
 
-## The [components] section declares the application components in the package, including interactive, service, and task components. 
 [components]
 [[components.interactive]]
-id = "com.amazondeveloper.kepleraudioreferenceapp.main"
+id = "com.amazondeveloper.keplersportapp.main"
 runtime-module = "/com.amazon.kepler.keplerscript.runtime.loader_2@IKeplerScript_2_0"
 categories = ["com.amazon.category.main", "com.amazon.category.kepler.media"]
 launch-type = "singleton"
 
-## The [needs] section declares the system capabilities that the application requires to function on a Vega device. This information helps Vega package manager and Amazon Appstore to ensure the application is installed on the supported devices. Carefully declare the application's needs for your desired device targeting. You can choose a combination of needs and wants to maximize your device reach, while providing enhanced features on applicable devices.
-[needs]
-[[needs.module]]
-id = "/com.amazon.kepler.media.control.server@IMediaControlServerComponentAsync"
+[[components.interactive]]
+id = "com.amazondeveloper.keplersportapp.sync_source"
+launch-type = "singleton"
+runtime-module = "/com.amazon.kepler.keplerscript.runtime.loader_2@IKeplerScript_2_0"
 
-## The [wants] section declares the capabilities that are optional for the application to function on a Vega device. Handle graceful fallbacks in your application code if a feature in this list is unavailable on a device.
+[[components.service]]
+id = "com.amazondeveloper.keplersportapp.interface.provider"
+categories = ["com.amazon.category.kepler.media"]
+launch-type = "singleton"
+runtime-module = "/com.amazon.kepler.headless.runtime.loader_2@IKeplerScript_2_0"
+
+[[components.service]]
+id = "com.amazondeveloper.keplersportapp.service"
+runtime-module = "/com.amazon.kepler.keplerscript.runtime.loader_2@IKeplerScript_2_0"
+launch-type = "singleton"
+
+[[components.task]]
+id = "com.amazondeveloper.keplersportapp.onInstallOrUpdateTask"
+runtime-module = "/com.amazon.kepler.headless.runtime.loader_2@IKeplerScript_2_0"
+
+[[components.task]]
+id = "com.amazondeveloper.keplersportapp.epgSyncTask"
+runtime-module = "/com.amazon.kepler.headless.runtime.loader_2@IKeplerScript_2_0"
+
+[processes]
+[[processes.group]]
+component-ids = [
+  "com.amazondeveloper.keplersportapp.main",
+  "com.amazondeveloper.keplersportapp.service",
+]
+
+[[processes.group]]
+component-ids = ["com.amazondeveloper.keplersportapp.interface.provider"]
+
+[[processes.group]]
+component-ids = ["com.amazondeveloper.keplersportapp.onInstallOrUpdateTask"]
+
+[[processes.group]]
+component-ids = ["com.amazondeveloper.keplersportapp.epgSyncTask"]
+
 [wants]
 [[wants.service]]
-id = "com.amazon.gipc.uuid.*"
+id = "com.amazondeveloper.keplersportapp.service"
 
 [[wants.service]]
-id = "com.amazon.media.server"
+id = "com.amazon.alexa.datastore.service"
 
-[[wants.service]] 
-id = "com.amazon.media.playersession.service"
+[[wants.service]]
+id = "com.amazon.inputmethod.service"
+
+[[wants.service]]
+id = "com.amazon.inputd.service"
+
+[[wants.service]]
+id = "com.amazon.network.service"
 
 [[wants.service]]
 id = "com.amazon.mediametrics.service"
 
 [[wants.service]]
+id = "com.amazon.media.server"
+
+[[wants.service]]
+id = "com.amazon.gipc.uuid.*"
+
+[[wants.service]]
+id = "com.amazon.media.playersession.service"
+
+[[wants.service]]
 id = "com.amazon.audio.stream"
 
-[[wants.service]] 
+[[wants.service]]
 id = "com.amazon.audio.control"
 
-[[wants.service]] 
+[[wants.service]]
 id = "com.amazon.audio.system"
 
 [[wants.service]]
 id = "com.amazon.mediabuffer.service"
-  		  
+
 [[wants.service]]
 id = "com.amazon.mediatransform.service"
 
+[[wants.service]]
+id = "com.amazon.drm.key"
 
-## The [offers] section declares the capabilities that an application package offers to other application packages installed on a Vega OS system. Offers is an optional section.
+[[wants.service]]
+id = "com.amazon.drm.crypto"
+
+[[wants.privilege]]
+id = "com.amazon.devconf.privilege.accessibility"
+
+[needs]
+[[needs.privilege]]
+id = "com.amazon.network.privilege.net-info"
+
+[[needs.privilege]]
+id = "com.amazon.kepler.tv.privilege.data_provider"
+
+[[needs.privilege]]
+id = "com.amazon.audio.privilege.microphone.access"
+
+[tasks]
+[[tasks.work]]
+component-id = "com.amazondeveloper.keplersportapp.onInstallOrUpdateTask"
+mode = "install"
+
 [offers]
+[[offers.service]]
+id = "com.amazondeveloper.keplersportapp.service"
+
+[[offers.service]]
+id = "com.amazondeveloper.keplersportapp.interface.provider"
 [[offers.service]]
 id = "com.amazon.gipc.uuid.*"
 
-#The [[extras]] section contains key-value pairs to describe custom meta-data associated with the package or a component in the package. Extras are optional.
+[[offers.interaction]]
+id = "com.amazondeveloper.keplersportapp.main"
+
+[[offers.module]]
+id = "/com.amazondeveloper.keplersportapp.main@IMod1"
+includes-messages = ["pkg://com.amazondeveloper.keplersportapp.main"]
+
+[[offers.message-target]]
+uses-component = "com.amazondeveloper.keplersportapp.sync_source"
+uris = ["livetv://sync_source"]
+
+[[message]]
+uri = "pkg://com.amazondeveloper.keplersportapp.main"
+sender-privileges = ["*"]                             # anyone can send this message
+receiver-privileges = ["self"]                        # only our package can receive this message
+
 [[extras]]
 key = "interface.provider"
-component-id = "com.amazondeveloper.kepleraudioreferenceapp.main"
+component-id = "com.amazondeveloper.keplersportapp.main"
 
+## KMC
 [[extras.value.application.interface]]
 interface_name = "com.amazon.kepler.media.IMediaPlaybackServer"
 command_options = [
-    "Play",
-    "Pause",
-    "StartOver",
-    "Previous",
-    "Next",
-    "SkipForward",
-    "SkipBackward",
+  "Play",
+  "Pause",
+  "StartOver",
+  "Previous",
+  "Next",
+  "SkipForward",
+  "SkipBackward",
 ]
 attribute_options = ["AudioAdvanceMuted"]
 features = ["AdvancedSeek", "VariableSpeed", "AudioTracks", "TextTracks"]
+
+[extras.value.application]
+[[extras.value.application.interface]]
+interface_name = "com.amazon.kepler.media.IChannelServer"
+features = ["ChannelList"]
+
+[extras.value.application.interface.override_command_component]
+ChangeChannel = "com.amazondeveloper.keplersportapp.main"
+ChangeChannelByNumber = "com.amazondeveloper.keplersportapp.main"
+SkipChannel = "com.amazondeveloper.keplersportapp.main"
+
+[extras.value.application.interface.static-values]
+ChannelList = []
+
+[application]
+relaunch_policy = "none"
+preserve_state = true

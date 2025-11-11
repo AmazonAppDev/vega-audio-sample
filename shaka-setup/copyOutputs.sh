@@ -13,13 +13,6 @@ cp -R shaka-player/shaka-rel/src/. ../src/w3cmedia/
 echo "Copying built Shaka Player distribution files"
 cp -R shaka-player/dist/. ../src/w3cmedia/shakaplayer/dist/
 
-echo "Removing test/example files"
-rm -f ../src/w3cmedia/AppNonAdaptive.tsx
-rm -f ../src/w3cmedia/AppNonAdaptiveVideo.tsx
-rm -f ../src/w3cmedia/AppPreBuffering.tsx
-rm -f ../src/w3cmedia/AppPreBufferingAds.tsx
-rm -f ../src/w3cmedia/AppPreBufferingPlaylist.tsx
-
 echo "Cleaning up obsolete files"
 rm -f ../src/w3cmedia/PlayerInterface.ts # obsolete file
 rm -f ../src/w3cmedia/shakaplayer/dist/wrapper.js # obsolete file carrying an interpolation literal {% ... %} causing a syntax error

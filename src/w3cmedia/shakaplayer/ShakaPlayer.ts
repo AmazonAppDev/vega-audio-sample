@@ -1,57 +1,83 @@
 /*
- * Copyright 2022 - 2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
  *
- * AMAZON PROPRIETARY/CONFIDENTIAL
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify,
+ * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so.
  *
- * You may not use this file except in compliance with the terms and
- * conditions set forth in the accompanying LICENSE.TXT file.
- *
- * THESE MATERIALS ARE PROVIDED ON AN "AS IS" BASIS. AMAZON SPECIFICALLY
- * DISCLAIMS, WITH RESPECT TO THESE MATERIALS, ALL WARRANTIES, EXPRESS,
- * IMPLIED, OR STATUTORY, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// @ts-nocheck
-import { HTMLMediaElement } from '@amazon-devices/react-native-w3cmedia/dist/headless';
 import { Platform } from 'react-native';
-import { AudioSource } from '../../types/AudioSource';
-import shaka from './dist/shaka-player.compiled';
-import { PlayerInterface, ShakaPlayerSettings } from './ShakaTypes';
 
+import { VideoPlayer } from '@amazon-devices/react-native-w3cmedia';
+
+import type {
+  VideoPlayerInterface,
+  VideoSource,
+} from '@AppServices/videoPlayer';
 // import polyfills
+import { logDebug } from '@AppUtils/logging';
 import Document from '../polyfills/DocumentPolyfill';
-import DOMParserPolyfill from '../polyfills/DOMParserPolyfill';
 import Element from '../polyfills/ElementPolyfill';
 import MiscPolyfill from '../polyfills/MiscPolyfill';
-import TextDecoderPolyfill from '../polyfills/TextDecoderPolyfill';
 import W3CMediaPolyfill from '../polyfills/W3CMediaPolyfill';
+import { getTrackVariantLabel } from './getTrackVariantLabel';
+import shaka from './shakaEntrypoint';
 
 // install polyfills
 Document.install();
 Element.install();
-TextDecoderPolyfill.install();
 W3CMediaPolyfill.install();
 MiscPolyfill.install();
-DOMParserPolyfill.install();
 
-const playerName: string = 'shaka';
-const playerVersion: string = '4.8.5';
+export type ExtendedTrack = VideoSource &
+  shaka.extern.Track & {
+    drm_license_header?: [string, string][];
+    manifest_header?: [string, string][];
+    secure?: boolean;
+  } & (
+    | { drm_scheme?: never; drm_license_uri?: never }
+    | {
+        drm_scheme: string;
+        drm_license_uri: string;
+      }
+  );
 
-export class ShakaPlayer implements PlayerInterface {
-  player: shaka.Player;
-  private setting_: ShakaPlayerSettings;
-  private mediaElement: HTMLMediaElement | null;
+export type ShakaPlayerSettings = {
+  secure: boolean;
+  abrEnabled: boolean;
+  abrMaxWidth?: number;
+  abrMaxHeight?: number;
+};
 
-  static readonly enableNativeParsing = false;
-  static readonly enableNativeXmlParsing = false;
+type InputTextTrack = NonNullable<VideoSource['textTracks']>[0];
 
-  constructor(
-    mediaElement: HTMLMediaElement | null,
-    setting: ShakaPlayerSettings,
-  ) {
+export class ShakaPlayer
+  extends VideoPlayer
+  implements VideoPlayerInterface<shaka.extern.Track>
+{
+  protected player: shaka.Player | null = null;
+  protected settings: ShakaPlayerSettings;
+  // @ts-ignore
+  protected mediaElement: VideoPlayer | null = null;
+
+  // since addTextTrack may be invoked before the player is initialized, this buffer is in place
+  protected addTextTracksBuffer: InputTextTrack[] = [];
+
+  constructor(mediaElement: VideoPlayer | null, setting: ShakaPlayerSettings) {
+    super();
+
     this.mediaElement = mediaElement;
-    this.setting_ = setting;
+    this.settings = setting;
   }
 
   // Custom callbacks {{{
@@ -76,14 +102,14 @@ export class ShakaPlayer implements PlayerInterface {
     type: shaka.net.NetworkingEngine.RequestType,
     response: shaka.extern.Response,
   ): void {
-    console.log(`sample:shaka: in the response filter type = ${type}`);
-    if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST) {
-      console.log('sample:shaka: in the response filter MANIFEST');
+    logDebug(`sample:shaka: in the response filter type = ${type}`);
+    if (type == shaka.net.NetworkingEngine.RequestType.MANIFEST) {
+      logDebug(`sample:shaka: in the response filter MANIFEST`);
       // Parse a custom header that contains a value needed to build a proper
       // license server URL.
       if (response.headers['x-uplynk-prefix']) {
         this.lastUplynkPrefix = response.headers['x-uplynk-prefix'];
-        console.log(
+        logDebug(
           `sample:shaka: in the response filter update Prefix to ${this.lastUplynkPrefix}`,
         );
       } else {
@@ -102,21 +128,21 @@ export class ShakaPlayer implements PlayerInterface {
     type: shaka.net.NetworkingEngine.RequestType,
     request: shaka.extern.Request,
   ): void {
-    console.log(`sample:shaka: in the request filter type = ${type}`);
-    if (type === shaka.net.NetworkingEngine.RequestType.LICENSE) {
-      console.log('sample:shaka: in the request filter LICENSE');
+    logDebug(`sample:shaka: in the request filter type = ${type}`);
+    if (type == shaka.net.NetworkingEngine.RequestType.LICENSE) {
+      logDebug(`sample:shaka: in the request filter LICENSE`);
       // Modify the license request URL based on our cookie.
-      if (request.uris[0].includes('wv') && this.lastUplynkPrefix) {
-        console.log('sample:shaka: in the request filter LICENSE WV');
+      if (request.uris[0]?.includes('wv') && this.lastUplynkPrefix) {
+        logDebug(`sample:shaka: in the request filter LICENSE WV`);
         request.uris[0] = this.lastUplynkPrefix.concat('/wv');
-      } else if (request.uris[0].includes('ck') && this.lastUplynkPrefix) {
+      } else if (request.uris[0]?.includes('ck') && this.lastUplynkPrefix) {
         request.uris[0] = this.lastUplynkPrefix.concat('/ck');
-      } else if (request.uris[0].includes('pr') && this.lastUplynkPrefix) {
-        console.log('sample:shaka: in the request filter LICENSE PR');
+      } else if (request.uris[0]?.includes('pr') && this.lastUplynkPrefix) {
+        logDebug(`sample:shaka: in the request filter LICENSE PR`);
         request.uris[0] = this.lastUplynkPrefix.concat('/pr');
       }
     }
-    console.log('sample:shaka: in the request filter END');
+    logDebug(`sample:shaka: in the request filter END`);
   }
 
   /**
@@ -130,7 +156,7 @@ export class ShakaPlayer implements PlayerInterface {
     requestType: shaka.net.NetworkingEngine.RequestType,
     request: shaka.extern.Request,
   ) {
-    if (requestType !== shaka.net.NetworkingEngine.RequestType.LICENSE) {
+    if (requestType != shaka.net.NetworkingEngine.RequestType.LICENSE) {
       return;
     }
 
@@ -162,122 +188,20 @@ export class ShakaPlayer implements PlayerInterface {
       });
     }
   }
-
-  async nativeParsePlaylist(
-    manifest: ArrayBuffer,
-    absoluteuri: string,
-  ): Array<shaka.hls.Playlist> {
-    console.log('shaka: nativeParsePlaylist+');
-    const playlist = await global.parseHlsManifest(
-      playerName,
-      playerVersion,
-      absoluteuri,
-      manifest,
-      shaka,
-    );
-    console.log('shaka: nativeParsePlaylist-');
-    return playlist;
-  }
-
-  nativeParseFromString(
-    manifest: ArrayBuffer,
-    expectedRoot: string,
-  ): Array<shaka.hls.Playlist> {
-    console.log('shaka: nativeParseFromString+');
-    console.log('shaka: nativeParseFromString: expectedRoot ', expectedRoot);
-    const playlist = global.nativeParseFromString(manifest, expectedRoot);
-    console.log('shaka: nativeParseFromString-');
-    return playlist;
-  }
-
   // End custom callbacks }}}
 
-  load(content: AudioSource, _autoplay: boolean): void {
-    if (ShakaPlayer.enableNativeParsing) {
-      if (
-        global.registerNativePlayerUtils &&
-        shaka.hls.HlsParser.setNativeFunctions
-      ) {
-        console.log('shakaplayer: registerNativePlayerUtils found');
-        if (!global.isNativeHlsParserSupported) {
-          const ret = global.registerNativePlayerUtils();
-          console.log('shaka: native functions registered: ' + ret);
-        }
-        if (
-          global.isNativeHlsParserSupported &&
-          global.parseHlsManifest &&
-          global.nativeShakaHlsCreateSegments
-        ) {
-          const nativeHlsParserSupported = global.isNativeHlsParserSupported(
-            playerName,
-            playerVersion,
-          );
-          if (nativeHlsParserSupported) {
-            console.log('shaka: setting native functions');
-            shaka.hls.HlsParser.setNativeFunctions(this.nativeParsePlaylist);
-          } else {
-            console.log(
-              'shaka: nativeHlsParser not supported for player version',
-            );
-          }
-        } else {
-          console.log(
-            'shaka: native func not set even after register, skipping it',
-          );
-        }
-      } else {
-        console.log(`shakaplayer: native offload not enabled!
-registerNativePlayerUtils: ${!!global.registerNativePlayerUtils},
-setNativeFunctions: ${!!shaka.hls.HlsParser.setNativeFunctions}`);
-      }
-    } else {
-      console.log('shaka: native playlist parsing is disabled');
-    }
-
-    if (ShakaPlayer.enableNativeXmlParsing) {
-      // For Dash content
-      if (
-        global.registerNativePlayerUtils &&
-        shaka.util.XmlUtils.setNativeFunctions
-      ) {
-        if (!global.isNativeXmlParserSupported) {
-          console.log('shaka: isNativeXmlParserSupported not registered.');
-        }
-        if (global.isNativeXmlParserSupported && global.nativeParseFromString) {
-          const isNativeXmlParserSupported = global.isNativeXmlParserSupported(
-            playerName,
-            playerVersion,
-          );
-          if (isNativeXmlParserSupported) {
-            console.log('shaka: setting DASH native functions');
-            shaka.util.XmlUtils.setNativeFunctions(this.nativeParseFromString);
-          } else {
-            console.log(
-              'shaka: nativeXMLParser not supported for player version',
-            );
-          }
-        } else {
-          console.log(
-            'shaka: native func not set even after register, skipping it',
-          );
-        }
-      } else {
-        console.log(`shakaplayer: DASH native offload not enabled!
-registerNativePlayerUtils: ${!!global.registerNativePlayerUtils},
-DASH::setNativeFunctions: ${!!shaka.util.XmlUtils.setNativeFunctions}`);
-      }
-    } else {
-      console.log('shaka: native Xml playlist parsing is disabled');
-    }
-
+  // @ts-ignore -- clash between signatures from VideoPlayerInterface (2 args which we want)
+  // and VideoPlayer (0 args which we don't want); _autoplay is unused here, all logic is handled
+  // in the service and the param is here just to conform to the interface
+  async load(content: ExtendedTrack, _autoplay: boolean) {
     shaka.polyfill.installAll();
-    console.log('shakaplayer: unregistering scheme http and https');
+    logDebug('shakaplayer: unregistering scheme http and https');
     shaka.net.NetworkingEngine.unregisterScheme('http');
     shaka.net.NetworkingEngine.unregisterScheme('https');
 
-    console.log('shakaplayer: registering scheme http and https');
+    logDebug('shakaplayer: registering scheme http and https');
     const httpFetchPluginSupported = shaka.net.HttpFetchPlugin.isSupported();
-    console.log(`httpfetchplugin supported? ${httpFetchPluginSupported}`);
+    logDebug(`httpfetchplugin supported? ${httpFetchPluginSupported}`);
 
     shaka.net.NetworkingEngine.registerScheme(
       'http',
@@ -293,110 +217,106 @@ DASH::setNativeFunctions: ${!!shaka.util.XmlUtils.setNativeFunctions}`);
       true,
     );
 
-    console.log('shakaplayer: creating');
-    this.player = new shaka.Player(this.mediaElement);
-    console.log('shakaplayer: loading');
+    logDebug('shakaplayer: creating');
+    this.player = new shaka.Player(
+      this.mediaElement as unknown as HTMLMediaElement,
+    );
+    logDebug('shakaplayer: loading');
 
     // Registering the Custom filters for uplynk test streams.
     const netEngine = this.player.getNetworkingEngine();
-    netEngine.clearAllRequestFilters();
-    netEngine.clearAllResponseFilters();
-    netEngine.registerRequestFilter(this.uplynkRequestFilter);
-    netEngine.registerResponseFilter(this.uplynkResponseFilter);
+    netEngine?.clearAllRequestFilters();
+    netEngine?.clearAllResponseFilters();
+    netEngine?.registerRequestFilter(this.uplynkRequestFilter);
+    netEngine?.registerResponseFilter(this.uplynkResponseFilter);
 
     // This filter is needed for Axinom streams.
     if (content.drm_license_header) {
       let header_map: Map<string, string> = new Map();
-      content.drm_license_header.map(values => {
-        console.log(
+
+      content.drm_license_header.map((values) => {
+        logDebug(
           `sample:shaka: got License header TAG: ${values[0]} DATA: ${values[1]}`,
         );
-        header_map.set(values[0] as string, values[1] as string);
+        header_map.set(values[0], values[1]);
       });
+
       const filter = (
         type: shaka.net.NetworkingEngine.RequestType,
         request: shaka.extern.Request,
       ): void => {
         return this.addLicenseRequestHeaders_(header_map, type, request);
       };
-      netEngine.registerRequestFilter(filter);
+      netEngine?.registerRequestFilter(filter);
     }
 
     if (content.manifest_header) {
       let header_map: Map<string, string> = new Map();
-      content.manifest_header.map(values => {
-        console.log(
+
+      content.manifest_header.map((values) => {
+        logDebug(
           `sample:shaka: got Manifest header TAG: ${values[0]} DATA: ${values[1]}`,
         );
         header_map.set(values[0] as string, values[1] as string);
       });
+
       const filter = (
         type: shaka.net.NetworkingEngine.RequestType,
         request: shaka.extern.Request,
       ): void => {
         return this.addManifestRequestHeaders_(header_map, type, request);
       };
-      netEngine.registerRequestFilter(filter);
+      netEngine?.registerRequestFilter(filter);
     }
-
     // Need capabilities query support on native side about max
     // resolution supported by native side and dynamically
     // populate 'Max resolution' setting for ABR.
     if (!Platform.isTV) {
-      console.log(
+      logDebug(
         'shakaplayer: For non-TV devices, max resolution is capped to FHD.',
       );
-      this.setting_.abrMaxWidth = Math.min(
+      this.settings.abrMaxWidth = Math.min(
         1919,
-        this.setting_.abrMaxWidth as number,
+        this.settings.abrMaxWidth as number,
       );
-      this.setting_.abrMaxHeight = Math.min(
+      this.settings.abrMaxHeight = Math.min(
         1079,
-        this.setting_.abrMaxHeight as number,
+        this.settings.abrMaxHeight as number,
       );
     }
 
-    console.log(
-      `ABR Max Resolution: ${this.setting_.abrMaxWidth} x ${this.setting_.abrMaxHeight}`,
+    logDebug(
+      `ABR Max Resolution: ${this.settings.abrMaxWidth} x ${this.settings.abrMaxHeight}`,
     );
 
     this.player.configure({
-      preferredVideoCodecs: content.vcodec ? [content.vcodec] : [],
-      preferredAudioCodecs: content.acodec ? [content.acodec] : [],
+      preferredVideoCodecs: [content.videoCodec],
+      preferredAudioCodecs: [content.audioCodec],
       streaming: {
         lowLatencyMode: false,
         inaccurateManifestTolerance: 0,
         rebufferingGoal: 0.01,
         bufferingGoal: 5,
-        bufferBehind: 10,
         alwaysStreamText: true,
         retryParameters: {
           maxAttempts: 3,
         },
       },
-      manifest: {
-        dash: {
-          disableXlinkProcessing: true,
-        },
-        hls: {
-          sequenceMode: false,
-        },
-      },
       abr: {
-        enabled: this.setting_.abrEnabled,
+        enabled: this.settings.abrEnabled,
         restrictions: {
           minWidth: 320,
           minHeight: 240,
-          maxWidth: this.setting_.abrMaxWidth,
-          maxHeight: this.setting_.abrMaxHeight,
+          maxWidth: this.settings.abrMaxWidth,
+          maxHeight: this.settings.abrMaxHeight,
         },
       },
       autoShowText: shaka.config.AutoShowText.ALWAYS,
     });
 
     // Separating the drm configuration since Shaka seems to call drm operations even if they are not needed when drm configuration is present.
-    if (content.drm_scheme && content.drm_license_uri) {
-      console.log(
+    if (content.drm_scheme !== null && content.drm_scheme !== '') {
+      logDebug(
         `shakaplayer: loading with ${content.drm_scheme} and ${content.drm_license_uri} and ${content.secure}`,
       );
       let signal_secure: string = 'SW_SECURE_CRYPTO';
@@ -404,7 +324,8 @@ DASH::setNativeFunctions: ${!!shaka.util.XmlUtils.setNativeFunctions}`);
       if (content.drm_scheme === 'com.microsoft.playready') {
         signal_secure = '150';
       }
-      if (content.secure === true) {
+
+      if (content.secure) {
         if (content.drm_scheme === 'com.microsoft.playready') {
           signal_secure = '3000';
         } else {
@@ -412,16 +333,16 @@ DASH::setNativeFunctions: ${!!shaka.util.XmlUtils.setNativeFunctions}`);
         }
       }
 
-      console.log(
+      logDebug(
         `shakaplayer: loading with ${content.drm_scheme} and ${content.drm_license_uri} and ${signal_secure}`,
       );
 
       // For some reason, shaka does not like to use drm_scheme as a key for the map passed as object to configure call.
       // We are forced to create the map and then pass to configure call as in below.
-      let server_map: Map<string, string> = {};
-      server_map[content.drm_scheme as string] =
-        content.drm_license_uri as string;
+      let server_map: Record<string, string> = {};
+      server_map[content.drm_scheme!] = content.drm_license_uri as string;
       this.player.configure('drm.servers', server_map);
+
       this.player.configure({
         drm: {
           advanced: {
@@ -441,57 +362,92 @@ DASH::setNativeFunctions: ${!!shaka.util.XmlUtils.setNativeFunctions}`);
       });
     }
 
-    this.internalLoad(content);
-    console.log('shakaplayer: load() OUT');
+    await this.internalLoad(content);
+
+    logDebug('shakaplayer: load() OUT');
   }
 
-  private async internalLoad(content: AudioSource) {
-    await this.player.load(content.uri);
-    console.log('shakaplayer: setTextTrackVisibility');
-    this.player.setTextTrackVisibility(true);
-    console.log('shakaplayer: loaded');
+  private async internalLoad(content: ExtendedTrack) {
+    await this.player!.load(content.uri);
+    logDebug('shakaplayer: setTextTrackVisibility');
+    this.player!.setTextTrackVisibility(true);
+    logDebug('shakaplayer: loaded');
+
+    // now apply the text tracks buffer (if filled)
+    for (const track of this.addTextTracksBuffer) {
+      await this.addTextTrack(track);
+    }
+
+    this.addTextTracksBuffer = [];
   }
 
-  play(): void {
-    this.mediaElement?.play();
+  override async play() {
+    await this.mediaElement?.play();
   }
 
-  pause(): void {
+  // eslint-disable-next-line require-await
+  override async pause() {
     this.mediaElement?.pause();
   }
 
-  seekBack(): void {
-    const time = this.mediaElement.currentTime;
-    console.log('shakaplayer: seekBack to ', time - 10);
-    this.mediaElement.currentTime = time - 10;
+  // eslint-disable-next-line require-await
+  async seek(time: number) {
+    logDebug('shakaplayer: seek to ', time);
+    this.mediaElement!.currentTime = time;
   }
 
-  seekFront(): void {
-    const time = this.mediaElement.currentTime;
-    console.log('shakaplayer: seekFront to ', time + 10);
-    this.mediaElement.currentTime = time + 10;
-  }
-
-  unload(): void {
-    console.log('shakaplayer:unload');
-    if (
-      ShakaPlayer.enableNativeXmlParsing &&
-      global.isNativeXmlParserSupported &&
-      global.nativeParseFromString &&
-      global.unloadNativeXmlParser
-    ) {
-      const isNativeXmlParserSupported = global.isNativeXmlParserSupported(
-        playerName,
-        playerVersion,
-      );
-      if (isNativeXmlParserSupported) {
-        console.log('shakaplayer: unloading native Xml parser');
-        global.unloadNativeXmlParser();
-        console.log('shakaplayer: unloaded native Xml parser');
-      }
-    }
-    this.player.detach();
-    this.player.destroy();
+  async unload() {
+    logDebug('shakaplayer:unload');
+    await this.player!.detach();
+    await this.player!.destroy();
     this.player = null;
+  }
+
+  getAvailableQualities() {
+    return this.player!.getVariantTracks().map((track) => ({
+      label: getTrackVariantLabel(track),
+      trackToken: track,
+    }));
+  }
+
+  setQuality(trackToken: shaka.extern.Track) {
+    this.player!.selectVariantTrack(trackToken);
+  }
+
+  // @ts-expect-error -- clash of declaration in base class and our implementation
+  async addTextTrack(textTrack: InputTextTrack) {
+    if (this.player) {
+      await this.player.addTextTrackAsync(
+        textTrack.uri,
+        textTrack.language,
+        textTrack.kind,
+        textTrack.mimeType,
+        textTrack.codec,
+        textTrack.label,
+      );
+    } else {
+      this.addTextTracksBuffer.push(textTrack);
+    }
+  }
+
+  getTextTracks() {
+    return this.player!.getTextTracks();
+  }
+
+  selectTextTrack(textTrack: shaka.extern.Track | null) {
+    if (textTrack === null) {
+      this.player!.setTextTrackVisibility(false);
+    } else {
+      this.player!.selectTextTrack(textTrack);
+      this.player!.setTextTrackVisibility(true);
+    }
+  }
+
+  getActiveTextTrack() {
+    return this.player!.getTextTracks().find((track) => track.active) ?? null;
+  }
+
+  isTextTrackVisible() {
+    return this.player!.isTextTrackVisible();
   }
 }

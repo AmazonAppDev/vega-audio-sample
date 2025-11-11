@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`fetchSuggestedForYouDetailsApiCall fetchSuggestedForYouDetailsApiCall should return parsed airDate 1`] = `
+{
+  "airDate": undefined,
+  "description": "Marathon Star is a documentary about the life of a man who travels the world on a motorcycle. It is a story of adventure, freedom, and the pursuit of dreams. It is a story of a man who travels the world on a motorcycle.",
+  "genre": "Documentary",
+  "itemId": "empty-air-date",
+  "network": "Bluejam",
+  "rating": 2.7,
+  "sportType": "volleyball",
+  "thumbnail": "https://d1v0fxmwkpxbrg.cloudfront.net/sports-app/images/900x700/6.jpg",
+  "title": "Marathon Star",
+  "videoSource": {
+    "format": "DASH",
+    "thumbnailUrl": "https://d1v0fxmwkpxbrg.cloudfront.net/videos/trickplays/cosmos-laundromat/",
+    "title": "DASH",
+    "type": "dash",
+    "uri": "https://d1v0fxmwkpxbrg.cloudfront.net/videos/dash/cosmos-laundromat/manifest.mpd",
+  },
+}
+`;
+
+exports[`fetchSuggestedForYouDetailsApiCall fetchSuggestedForYouDetailsApiCall should return parsed suggested for you data on success 1`] = `
+{
+  "airDate": 2020-11-14T04:52:43.000Z,
+  "description": "American Vagabond is a documentary about the life of a man who travels the world on a motorcycle. It is a story of adventure, freedom, and the pursuit of dreams. It is a story of a man who travels the world on a motorcycle.",
+  "genre": "Documentary",
+  "itemId": "e9a06a8f-9d40-41b9-a8b4-38bbc67159a2",
+  "network": "Bluejam",
+  "rating": 2.7,
+  "sportType": "volleyball",
+  "thumbnail": "https://d1v0fxmwkpxbrg.cloudfront.net/sports-app/images/900x700/1.jpg",
+  "title": "American Vagabond",
+  "videoSource": {
+    "format": "HLS",
+    "thumbnailUrl": "https://d1v0fxmwkpxbrg.cloudfront.net/videos/trickplays/cosmos-laundromat/",
+    "title": "HLS",
+    "type": "hls",
+    "uri": "https://d1v0fxmwkpxbrg.cloudfront.net/videos/hls/cosmos-laundromat/master.m3u8",
+  },
+}
+`;
+
+exports[`fetchSuggestedForYouDetailsApiCall useSuggestedForYouDetails should return suggestedForYou data and no error on successful fetch 1`] = `
+{
+  "airDate": 2020-11-14T04:52:43.000Z,
+  "description": "American Vagabond is a documentary about the life of a man who travels the world on a motorcycle. It is a story of adventure, freedom, and the pursuit of dreams. It is a story of a man who travels the world on a motorcycle.",
+  "genre": "Documentary",
+  "itemId": "e9a06a8f-9d40-41b9-a8b4-38bbc67159a2",
+  "network": "Bluejam",
+  "rating": 2.7,
+  "sportType": "volleyball",
+  "thumbnail": "https://d1v0fxmwkpxbrg.cloudfront.net/sports-app/images/900x700/1.jpg",
+  "title": "American Vagabond",
+  "videoSource": {
+    "format": "HLS",
+    "thumbnailUrl": "https://d1v0fxmwkpxbrg.cloudfront.net/videos/trickplays/cosmos-laundromat/",
+    "title": "HLS",
+    "type": "hls",
+    "uri": "https://d1v0fxmwkpxbrg.cloudfront.net/videos/hls/cosmos-laundromat/master.m3u8",
+  },
+}
+`;

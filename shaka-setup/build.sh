@@ -96,6 +96,15 @@ tar -xzf shaka-rel-v$VERSION-r$RELEASE.tar.gz
     git am --abort
 }
 
+# Disable Google Fonts to support restricted network environments
+if [ -f "ui/controls.less" ]; then
+    # Comment out font imports to prevent network failures
+    sed 's|@import (css, inline) "https://fonts.googleapis.com/css?family=Roboto";|\n/* Roboto font disabled for network compatibility */|g' ui/controls.less | \
+    sed 's|@import (css, inline) "https://fonts.googleapis.com/icon?family=Material+Icons+Round";|\n/* Material Icons disabled for network compatibility */|g' > ui/controls.less.tmp
+    mv ui/controls.less.tmp ui/controls.less
+    echo "Font imports disabled for network-restricted environments"
+fi
+
 # Build customized Shaka Player
 echo "Building customized Shaka Player with Vega build system"
 if ! kepler exec python build/all.py; then
