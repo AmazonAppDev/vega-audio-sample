@@ -1,15 +1,17 @@
-/*
- * Copyright (c) 2025 Amazon.com, Inc. or its affiliates.  All rights reserved.
- *
- * PROPRIETARY/CONFIDENTIAL.  USE IS SUBJECT TO LICENSE TERMS.
- */
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
 
 import { AppRegistry, LogBox } from 'react-native';
-import { name as appName } from './app.json';
 import { App } from './src/App';
+import { name as appName, syncSourceName } from './app.json';
+import { EpgSyncSource }  from './src/epg/EpgSyncSource';
 
-// Temporary workaround for problem with nested text
-// not working currently.
+// This command deactivate debug logs and warnings that don't affect core functionality.
+// To see console messages as small windows at the top, comment out the line below.
 LogBox.ignoreAllLogs();
 
 AppRegistry.registerComponent(appName, () => App);
+AppRegistry.registerComponent(
+  syncSourceName,
+  () => EpgSyncSource,
+);

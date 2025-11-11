@@ -1,156 +1,143 @@
-import {
+import type {
   IMediaSessionId,
   ITimeValue,
 } from '@amazon-devices/kepler-media-controls';
-import {
-  AudioPlayer,
-  KeplerMediaControlHandler,
-} from '@amazon-devices/react-native-w3cmedia';
-import { DEFAULT_SEEK_SECONDS } from '../screens/Player';
+import { KeplerMediaControlHandler } from '@amazon-devices/react-native-w3cmedia';
 
-/**
- * Custom media control handler with TV remote integration
- */
-export class AppOverrideMediaControlHandler extends KeplerMediaControlHandler {
-  private audioPlayer: AudioPlayer | null = null;
+import type { VideoPlayerService } from '../services/videoPlayer/VideoPlayerService';
+import { logDebug } from './logging';
+
+// You can override as many method from KeplerMediaControlHandler class as needed.
+// Below code demonstrate overriding a few of them
+export class AppOverrideMediaControlHandler<
+  TrackToken,
+  PlayerSettings,
+> extends KeplerMediaControlHandler {
+  private videoPlayer: VideoPlayerService<TrackToken, PlayerSettings> | null =
+    null;
   private clientOverrideNeeded: boolean = false;
-  private static SEEK_BACKWARD: number = -DEFAULT_SEEK_SECONDS;
-  private static SEEK_FORWARD: number = DEFAULT_SEEK_SECONDS;
 
-  /**
-   * Creates media control handler with configurable override behavior
-   */
-  constructor(audioPlayer: AudioPlayer, overrideNeeded: boolean) {
+  constructor(
+    videoPlayer: VideoPlayerService<TrackToken, PlayerSettings>,
+    overrideNeeded: boolean,
+  ) {
     super();
-    this.audioPlayer = audioPlayer;
+    this.videoPlayer = videoPlayer;
     this.clientOverrideNeeded = overrideNeeded;
   }
 
-  /**
-   * Handles play command with direct AudioPlayer control
-   */
-  async handlePlay(mediaSessionId?: IMediaSessionId) {
+  override async handlePlay(mediaSessionId?: IMediaSessionId) {
     if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handlePlay()');
-      this.audioPlayer?.play();
-    } else {
-      console.log('AppOverrideMediaControlHandler default handlePlay()');
-      super.handlePlay(mediaSessionId);
-    }
-  }
-  /**
-   * Handles pause command with direct AudioPlayer control
-   */
-  async handlePause(mediaSessionId?: IMediaSessionId) {
-    if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handlePause()');
-      this.audioPlayer?.pause();
-    } else {
-      console.log('AppOverrideMediaControlHandler default handlePause()');
-      super.handlePause(mediaSessionId);
-    }
-  }
-  /**
-   * Handles stop command (implemented as pause)
-   */
-  async handleStop(mediaSessionId?: IMediaSessionId) {
-    if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handleStop()');
-      this.audioPlayer?.pause();
-    } else {
-      console.log('AppOverrideMediaControlHandler default handleStop()');
-      super.handleStop(mediaSessionId);
-    }
-  }
-  /**
-   * Handles play/pause toggle with state detection
-   */
-  async handleTogglePlayPause(mediaSessionId?: IMediaSessionId) {
-    if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handleTogglePlayPause()');
-
-      if (this.audioPlayer?.paused) {
-        this.audioPlayer?.play();
-      } else {
-        this.audioPlayer?.pause();
-      }
-    } else {
-      console.log(
-        'AppOverrideMediaControlHandler default handleTogglePlayPause()',
+      // Do custom handling
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] - managed media control callback for handlePlay()',
       );
-      super.handleTogglePlayPause(mediaSessionId);
-    }
-  }
-  /**
-   * Resets track to beginning and starts playback
-   */
-  async handleStartOver(mediaSessionId?: IMediaSessionId) {
-    if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handleStartOver()');
-      this.audioPlayer!.currentTime = 0;
-      this.audioPlayer?.play();
+      await this.videoPlayer?.play();
     } else {
-      console.log('AppOverrideMediaControlHandler default handleStartOver()');
-      super.handleStartOver(mediaSessionId);
+      // Let it be handled by the default handler
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] default media control callback for handlePlay()',
+      );
+      await super.handlePlay(mediaSessionId);
     }
   }
-  /**
-   * Seeks forward by 10 seconds with boundary protection
-   */
-  async handleFastForward(mediaSessionId?: IMediaSessionId) {
+  override async handlePause(mediaSessionId?: IMediaSessionId) {
     if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handleFastForward()');
-
-      let time = this.audioPlayer?.currentTime;
-      const duration = this.audioPlayer?.duration;
-
-      if (time === undefined || duration === undefined) {
-        console.warn(
-          `Could not seek forward ${AppOverrideMediaControlHandler.SEEK_FORWARD} seconds. currentTime=${time}, duration=${duration}`,
-        );
-        return;
+      // Do custom handling
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] - managed media control callback for handlePause()',
+      );
+      await this.videoPlayer?.pause();
+    } else {
+      // Let it be handled by the default handler
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] default media control callback for handlePause()',
+      );
+      await super.handlePause(mediaSessionId);
+    }
+  }
+  override async handleStop(mediaSessionId?: IMediaSessionId) {
+    if (this.clientOverrideNeeded) {
+      // Do custom handling
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] - managed media control callback for handleStop()',
+      );
+      await this.videoPlayer?.pause();
+    } else {
+      // Let it be handled by the default handler
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] default media control callback for handleStop()',
+      );
+      await super.handleStop(mediaSessionId);
+    }
+  }
+  override async handleTogglePlayPause(mediaSessionId?: IMediaSessionId) {
+    if (this.clientOverrideNeeded) {
+      // Do custom handling
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] - managed media control callback for handleTogglePlayPause()',
+      );
+      if (this.videoPlayer?.paused) {
+        logDebug('Player is in paused state hence initiate play command');
+        await this.videoPlayer?.play();
+      } else {
+        logDebug('Player is in playing state hence initiate pause command');
+        await this.videoPlayer?.pause();
       }
-
-      time += AppOverrideMediaControlHandler.SEEK_FORWARD;
-      this.audioPlayer!.currentTime = Math.min(time, duration);
     } else {
-      console.log('AppOverrideMediaControlHandler default handleFastForward()');
-      super.handleFastForward(mediaSessionId);
+      // Let it be handled by the default handler
+      logDebug(
+        '[AppOverrideMediaControlHandler.ts] default media control callback for handleTogglePlayPause()',
+      );
+      await super.handleTogglePlayPause(mediaSessionId);
     }
   }
-  /**
-   * Seeks backward by 10 seconds with boundary protection
-   */
-  async handleRewind(mediaSessionId?: IMediaSessionId) {
+  override async handleStartOver(mediaSessionId?: IMediaSessionId) {
     if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handleRewind()');
-
-      let time = this.audioPlayer?.currentTime;
-
-      if (time === undefined) {
-        console.warn(
-          `Could not seek back ${AppOverrideMediaControlHandler.SEEK_BACKWARD} seconds. currentTime undefined`,
-        );
-        return;
-      }
-
-      time += AppOverrideMediaControlHandler.SEEK_BACKWARD;
-      this.audioPlayer!.currentTime = Math.max(time, 0);
+      // Do custom handling
+      logDebug(
+        'AppOverrideMediaControlHandler managed media control callback for handleStartOver()',
+      );
+      // this.videoPlayer!.currentTime = 0; // Invalid: use getPlaybackTime() or another method if needed
+      await this.videoPlayer?.play();
     } else {
-      console.log('AppOverrideMediaControlHandler default handleRewind()');
-      super.handleRewind(mediaSessionId);
+      // Let it be handled by the default handler
+      logDebug(
+        'AppOverrideMediaControlHandler default media control callback for handleStartOver()',
+      );
+      await super.handleStartOver(mediaSessionId);
     }
   }
-  /**
-   * Seeks to specific time position
-   */
-  async handleSeek(position: ITimeValue, mediaSessionId?: IMediaSessionId) {
+  override async handleFastForward(mediaSessionId?: IMediaSessionId) {
+    logDebug(
+      'AppOverrideMediaControlHandler disable any fast forward interaction, it is handled with seek bar callbacks. mediaSessionId: ',
+      mediaSessionId,
+    );
+    await Promise.resolve();
+  }
+  override async handleRewind(mediaSessionId?: IMediaSessionId) {
+    logDebug(
+      'AppOverrideMediaControlHandler disable any fast rewind interaction, it is handled with seek bar callbacks. mediaSessionId: ',
+      mediaSessionId,
+    );
+    await Promise.resolve();
+  }
+  override async handleSeek(
+    position: ITimeValue,
+    mediaSessionId?: IMediaSessionId,
+  ) {
     if (this.clientOverrideNeeded) {
-      console.log('AppOverrideMediaControlHandler handleSeek()');
-      this.audioPlayer?.fastSeek(position.seconds);
+      // Do custom handling
+      logDebug(
+        'AppOverrideMediaControlHandler managed media control callback for handleSeek()',
+      );
+      await super.handleSeek(position, mediaSessionId);
     } else {
-      console.log('AppOverrideMediaControlHandler default handleSeek()');
-      super.handleSeek(position, mediaSessionId);
+      // Let it be handled by the default handler
+      logDebug(
+        'AppOverrideMediaControlHandler default media control callback for handleSeek()',
+      );
+      await super.handleSeek(position, mediaSessionId);
     }
   }
 }
