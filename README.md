@@ -26,7 +26,7 @@ Build and run the app
 
 Before you launch the sample app, make sure that you have:
 
-1. [Installed the Vega Developer Tools](https://developer.amazon.com/docs/vega/0.21/install-vega-sdk.html)
+1. [Installed the Vega Developer Tools](https://developer.amazon.com/docs/vega/latest/install-vega-sdk.html)
 2. **Java Runtime Environment (JRE) or Java Development Kit (JDK)** - Required by Shaka Player's build system for JavaScript compilation and optimization
 3. **Python** - Required by Shaka Player's build scripts
 
@@ -36,7 +36,7 @@ Before you launch the sample app, make sure that you have:
 
 After you download the source code from GitHub, you can build the Vega Audio Sample App from the command line to generate VPKG files. The VPKG files run on the Vega Virtual Device and Vega OS Fire TV Stick.
 
-You can also use [Vega Studio](https://developer.amazon.com/docs/vega/0.21/setup-extension.html#learn-the-basic-features) with Visual Studio Code to build the app.
+You can also use [Vega Studio](https://developer.amazon.com/docs/vega/latest/setup-extension.html#learn-the-basic-features) with Visual Studio Code to build the app.
 
 1. At the command prompt, navigate to the Vega Audio Sample App source code directory.
 
@@ -65,7 +65,7 @@ You can also use [Vega Studio](https://developer.amazon.com/docs/vega/0.21/setup
 1. To start the Vega Virtual Device, at the command prompt, run the following command.
 
    ```bash
-   kepler virtual-device start
+   vega virtual-device start
    ```
 
 2. Go to the directory where you placed the VPKG files.
@@ -75,13 +75,13 @@ You can also use [Vega Studio](https://developer.amazon.com/docs/vega/0.21/setup
    - On Mac M-series based devices.
       
       ```bash
-      kepler run-kepler build/aarch64-release/kepleraudioreferenceapp_aarch64.vpkg
+      vega run-app build/aarch64-release/kepleraudioreferenceapp_aarch64.vpkg
       ```
 
    - On x86_64 based devices.
       
      ```bash
-     kepler run-kepler build/x86_64-release/kepleraudioreferenceapp_x86_64.vpkg
+     vega run-app build/x86_64-release/kepleraudioreferenceapp_x86_64.vpkg
      ```
 
 #### Vega OS Fire TV Stick
@@ -91,7 +91,7 @@ You can also use [Vega Studio](https://developer.amazon.com/docs/vega/0.21/setup
 2. To install and launch the app on your Vega OS Fire TV Stick, run the following command.
 
    ```bash
-   kepler run-kepler build/armv7-release/kepleraudioreferenceapp_armv7.vpkg
+   vega run-app build/armv7-release/kepleraudioreferenceapp_armv7.vpkg
    ```
 
 Troubleshooting the app
@@ -118,7 +118,7 @@ npm start -- --reset-cache
 
 * Restart the simulator.
 
-* Run the `kepler clean` command. This removes the artifacts generated in the top level `/.build` folder. To learn more, see the [Vega CLI Functions](https://developer.amazon.com/docs/vega/0.21/cli-tools.html) document.
+* Run the `vega clean` command. This removes the artifacts generated in the top level `/.build` folder. To learn more, see the [Vega CLI Functions](https://developer.amazon.com/docs/vega/latest/cli-tools.html) document.
 
 Testing the app
 ---------------
@@ -148,8 +148,8 @@ This app uses Vega's W3C Media API (`@amazon-devices/react-native-w3cmedia`) for
 
 **For comprehensive W3C Media API documentation:**
 
-- [Media Player Overview](https://developer.amazon.com/docs/vega/0.21/media-player.html) - Complete API reference and concepts.
-- [Media Player Setup Guide](https://developer.amazon.com/docs/vega/0.21/media-player-setup.html) - Step-by-step implementation instructions.
+- [Media Player Overview](https://developer.amazon.com/docs/vega/latest/media-player.html) - Complete API reference and concepts.
+- [Media Player Setup Guide](https://developer.amazon.com/docs/vega/latest/media-player-setup.html) - Step-by-step implementation instructions.
 
 ### Focus management
 
@@ -267,7 +267,7 @@ useEffect(() => {
 ```
 
 Implementation guide
--------------------
+--------------------
 
 ### Audio architecture overview
 
@@ -374,7 +374,7 @@ To implement `TVFocusGuideView`:
   </View>
 ```
 
-For more details about this vega supported library, see [TVFocusGuideView](https://developer.amazon.com/docs/vega-api/0.21/tvfocusguideview.html) in the Vega documentation.
+For more details about this vega supported library, see [TVFocusGuideView](https://developer.amazon.com/docs/vega-api/latest/tvfocusguideview.html) in the Vega documentation.
 
 Release Notes
 -------------
