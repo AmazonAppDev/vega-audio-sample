@@ -1,6 +1,6 @@
 {
   "name": "@amazon-devices/kepleraudioreferenceapp",
-  "version": "2.22.0",
+  "version": "2.22.1",
   "files": [
     "dist"
   ],
@@ -36,10 +36,10 @@
     "prepack": "run-s build:module"
   },
   "dependencies": {
-    "@amazon-devices/kepler-media-controls": "^1.0.0",
-    "@amazon-devices/kepler-media-types": "^1.0.0",
+    "@amazon-devices/kepler-media-controls": "~1.0.0",
+    "@amazon-devices/kepler-media-types": "~1.0.0",
     "@amazon-devices/keplerscript-react-native-reanimated": "~2.0.0",
-    "@amazon-devices/react-native-kepler": "^2.0.0",
+    "@amazon-devices/react-native-kepler": "~2.0.0",
     "@amazon-devices/react-native-safe-area-context": "~2.0.0",
     "@amazon-devices/react-native-screens": "~2.0.0",
     "@amazon-devices/react-native-w3cmedia": "~2.1.0",
@@ -48,7 +48,7 @@
     "@amazon-devices/react-navigation__native": "~2.0.0",
     "@amazon-devices/react-navigation__stack": "~2.0.0",
     "@amazon-devices/react-native-vector-icons": "~2.0.0",
-    "@amazon-devices/kepler-ui-components": "^2.0.0",
+    "@amazon-devices/kepler-ui-components": "~2.4.0",
     "base-64": "^1.0.0",
     "lodash": "^4.17.21",
     "moment": "~2.30.1",
@@ -69,7 +69,7 @@
     ]
   },
   "devDependencies": {
-    "@amazon-devices/kepler-cli-platform": "^0",
+    "@amazon-devices/kepler-cli-platform": "~0.22.0",
     "@babel/core": "^7.22.8",
     "@babel/runtime": "^7.22.8",
     "@react-native-community/eslint-config": "^3.0.1",

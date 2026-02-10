@@ -7,7 +7,7 @@ schema-version = 1
 
 [package]
 title = "Vega Audio Sample App"
-version = "2.22.0"
+version = "2.22.1"
 id = "com.amazondeveloper.kepleraudioreferenceapp"
 icon = "@image/audio-app-dark.png"
 
