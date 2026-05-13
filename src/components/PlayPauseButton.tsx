@@ -11,7 +11,7 @@ import PlayerButton from './PlayerButton';
 
 type Props = {
   audioRef: React.MutableRefObject<AudioPlayer | null>;
-  focusableElementRef: RefObject<TouchableOpacity>;
+  focusableElementRef: RefObject<React.ComponentRef<typeof TouchableOpacity> | null>;
   onBlur?: () => void;
 };
 

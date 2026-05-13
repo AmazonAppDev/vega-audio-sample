@@ -22,7 +22,7 @@ import {
   KeplerAppStateEvent,
   useKeplerAppStateManager,
   useTVEventHandler,
-} from '@amazon-devices//react-native-kepler';
+} from '@amazon-devices/react-native-kepler';
 import {
   useFocusEffect,
   useIsFocused,
@@ -228,17 +228,13 @@ const Player = ({
       };
 
       if (Platform.isTV) {
-        BackHandler.addEventListener('hardwareBackPress', backHandlerCallback);
+        const subscription = BackHandler.addEventListener('hardwareBackPress', backHandlerCallback);
+        return () => {
+          subscription.remove();
+        };
       }
 
-      return () => {
-        if (Platform.isTV) {
-          BackHandler.removeEventListener(
-            'hardwareBackPress',
-            backHandlerCallback,
-          );
-        }
-      };
+      return () => {};
     }, [navigateBack]),
   );
 

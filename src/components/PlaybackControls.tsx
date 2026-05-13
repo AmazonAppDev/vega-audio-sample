@@ -109,9 +109,9 @@ export const PlaybackControls = ({
   isFocused,
   handleSeek,
 }: Props) => {
-  const seekBackwardRef = useRef<TouchableOpacity>(null);
-  const seekForwardRef = useRef<TouchableOpacity>(null);
-  const playPauseRef = useRef<TouchableOpacity>(null);
+  const seekBackwardRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const seekForwardRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const playPauseRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
 
   useTVEventHandler(({ eventType, eventKeyAction }: HWEvent) => {
     if (!isFocused) {

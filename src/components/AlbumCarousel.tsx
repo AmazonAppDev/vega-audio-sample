@@ -41,12 +41,12 @@ const AlbumCarousel = ({
   const navigation = useNavigation();
   const [currentIndex, setIndex] = useState<number>(selectedAlbumIndex || 0);
   const totalCount: number = albums.length;
-  const previousButtonRef = useRef<TouchableOpacity>(null);
-  const navigationDestinations: TouchableOpacity[] = previousButtonRef?.current
+  const previousButtonRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const navigationDestinations: React.ComponentRef<typeof TouchableOpacity>[] = previousButtonRef?.current
     ? [previousButtonRef?.current]
     : [];
-  const playerButtonRef = useRef<TouchableOpacity>(null);
-  const playShuffleDestinations: TouchableOpacity[] = playerButtonRef?.current
+  const playerButtonRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const playShuffleDestinations: React.ComponentRef<typeof TouchableOpacity>[] = playerButtonRef?.current
     ? [playerButtonRef?.current]
     : [];
 

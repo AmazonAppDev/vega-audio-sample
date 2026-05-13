@@ -57,22 +57,18 @@ const DrawerStack = () => {
       <Drawer.Screen
         name={Screens.HOME_SCREEN}
         component={Home}
-        options={{ unmountOnBlur: true }}
       />
       <Drawer.Screen
         name={Screens.SEARCH_SCREEN}
         component={Search}
-        options={{ unmountOnBlur: true }}
       />
       <Drawer.Screen
         name={Screens.LIBRARY_SCREEN}
         component={Library}
-        options={{ unmountOnBlur: true }}
       />
       <Drawer.Screen
         name={Screens.SETTINGS_SCREEN}
         component={Settings}
-        options={{ unmountOnBlur: true }}
       />
     </Drawer.Navigator>
   );
@@ -83,12 +79,12 @@ const DrawerStack = () => {
  */
 const NavigationStack = () => {
   return (
-    <NavigationContainer independent={true}>
+    <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
           cardOverlayEnabled: true,
-          animationEnabled: false,
+          animation: 'none',
         }}
       >
         <Stack.Screen name={Screens.DRAWER_SCREEN} component={DrawerStack} />

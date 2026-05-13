@@ -50,7 +50,6 @@ const AudioSeekBar = ({
           totalValue={totalDuration}
           currentValueIndicatorColor={COLORS.GRAY}
           thumbIcon={renderThumbIcon()}
-          disabled
           onValueChange={value => {
             onValueChange(value);
           }}

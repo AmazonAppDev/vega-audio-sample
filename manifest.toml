@@ -15,7 +15,7 @@ icon = "@image/audio-app-dark.png"
 [components]
 [[components.interactive]]
 id = "com.amazondeveloper.kepleraudioreferenceapp.main"
-runtime-module = "/com.amazon.kepler.keplerscript.runtime.loader_2@IKeplerScript_2_0"
+runtime-module = "/com.amazon.kepler.runtime.react_native_kepler_4@IReactNativeKepler_0"
 categories = ["com.amazon.category.main", "com.amazon.category.kepler.media"]
 launch-type = "singleton"
 

@@ -24,7 +24,7 @@ import {
  * @property {string} [testID] - Test identifier for automated testing
  */
 interface FocusableElementProps extends TouchableOpacityProps {
-  focusableElementRef?: RefObject<TouchableOpacity>;
+  focusableElementRef?: RefObject<React.ComponentRef<typeof TouchableOpacity> | null>;
   onFocusOverrideStyle?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   onBlur?: () => void;

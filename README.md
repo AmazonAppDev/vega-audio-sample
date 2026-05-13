@@ -26,11 +26,14 @@ Build and run the app
 
 Before you launch the sample app, make sure that you have:
 
-1. [Installed the Vega Developer Tools](https://developer.amazon.com/docs/vega/latest/install-vega-sdk.html)
-2. **Java Runtime Environment (JRE) or Java Development Kit (JDK)** - Required by Shaka Player's build system for JavaScript compilation and optimization
-3. **Python** - Required by Shaka Player's build scripts
+* [Vega Developer Tools](https://developer.amazon.com/docs/vega/latest/install-vega-sdk.html)
+* [Git v1.9 or later](https://git-scm.com/install/)
+* [Python v3.x](https://www.python.org/downloads/)
+* [Java Runtime Environment v21 or later](https://learn.microsoft.com/en-us/java/openjdk/download)
+* [NodeJS v18-v20](https://nodejs.org/en/download/)
+* A local web server, such as Apache. A local web server is required because browsers place restrictions on applications from file:/// URLs.
 
-**Note**: The Shaka Player integration runs automatically during `npm install` and requires these dependencies. If you encounter build errors related to Java or Python, install the missing prerequisites and run `npm install` again. For any other prerequisite Shaka issue please visit: https://shaka-project.github.io/shaka-player/docs/api/tutorial-welcome.html.
+**Note**: The Shaka Player integration runs automatically during `npm install` and requires these dependencies. If you encounter build errors related to Java or Python, install the missing prerequisites and run `npm install` again. For any other prerequisite Shaka issue, please visit: https://shaka-project.github.io/shaka-player/docs/api/tutorial-welcome.html.
 
 ### Step 1: Build the app
 
@@ -40,7 +43,7 @@ You can also use [Vega Studio](https://developer.amazon.com/docs/vega/latest/set
 
 1. At the command prompt, navigate to the Vega Audio Sample App source code directory.
 
-2. To install the app dependencies, run the following command.
+2. To install the app dependencies, run the following command. The installation can take several minutes to complete.
 
    ```bash
    npm install
@@ -54,7 +57,7 @@ You can also use [Vega Studio](https://developer.amazon.com/docs/vega/latest/set
 
 4. At the command prompt, in the **build** folder, verify that you generated the VPKG files for your device's architecture.
 
-   * **armv7-release/kepleraudioreferenceapp_armv7.vpkg**—generated on x86_64 and Mac-M series devices to run on the Vega OS Fire TV Stick.
+   * **armv7-release/kepleraudioreferenceapp_armv7.vpkg**—generated on x86_64 and Mac M-series devices to run on the Vega OS Fire TV Stick.
    * **x86_64-release/kepleraudioreferenceapp_x86_64.vpkg**—generated on x86_64 device to run on the VVD.
    * **aarch64-release/kepleraudioreferenceapp_aarch64.vpkg**—generated on Mac M-series device to run on the VVD.
 
@@ -62,23 +65,21 @@ You can also use [Vega Studio](https://developer.amazon.com/docs/vega/latest/set
 
 #### Vega Virtual Device
 
-1. To start the Vega Virtual Device, at the command prompt, run the following command.
+1. To start the Vega Virtual Device at the command prompt, run the following command.
 
    ```bash
    vega virtual-device start
    ```
 
-2. Go to the directory where you placed the VPKG files.
+2. To install and launch the app on the Vega Virtual Device, run the following command, depending on your device architecture.
 
-3. To install and launch the app on the Vega Virtual Device, run the following command, depending on your device architecture.
-
-   - On Mac M-series based devices.
+   - On Mac M-series-based devices.
       
       ```bash
       vega run-app build/aarch64-release/kepleraudioreferenceapp_aarch64.vpkg
       ```
 
-   - On x86_64 based devices.
+   - On x86_64-based devices.
       
      ```bash
      vega run-app build/x86_64-release/kepleraudioreferenceapp_x86_64.vpkg
@@ -97,13 +98,13 @@ You can also use [Vega Studio](https://developer.amazon.com/docs/vega/latest/set
 Troubleshooting the app
 -----------------------
 
-If you're facing unexpected issues while trying to build and run the app (For example, the build is failing randomly, the app is not starting, or the app is crashing randomly.) try the following solutions:
+If you're facing unexpected issues while trying to build and run the app (for example, the build is failing randomly, the app is not starting, or the app is crashing randomly), try the following solutions:
 
 * Run the `npm run clean` command. This removes the `node_modules` folder and other files related to your previous builds.
 
 * When working in debug mode, you might need to use `npm run start -- --reset-cache` to clear the cache.
 
-* In some cases (For example, changes done to patches or changes in the package.json file.) you may need to make sure there is no cache present in the project, in order to build successfully. Cleaning ALL cache files in the project can be done by running the following commands:
+* In some cases (for example, changes done to patches or changes in the package.json file), you may need to make sure there is no cache present in the project in order to build successfully. Cleaning all cache files in the project can be done by running the following commands:
 
 ```
 npm run clean
@@ -118,12 +119,12 @@ npm start -- --reset-cache
 
 * Restart the simulator.
 
-* Run the `vega clean` command. This removes the artifacts generated in the top level `/.build` folder. To learn more, see the [Vega CLI Functions](https://developer.amazon.com/docs/vega/latest/cli-tools.html) document.
+* Run the `vega clean` command. This removes the artifacts generated in the top-level `/.build` folder. To learn more, see the [Vega CLI Functions](https://developer.amazon.com/docs/vega/latest/cli-tools.html) document.
 
 Testing the app
 ---------------
 
-To run the test suite, use the following commands:
+To run the test suite, use the following command:
 
 ```
 npm test
@@ -374,7 +375,7 @@ To implement `TVFocusGuideView`:
   </View>
 ```
 
-For more details about this vega supported library, see [TVFocusGuideView](https://developer.amazon.com/docs/vega-api/latest/tvfocusguideview.html) in the Vega documentation.
+For more details about this Vega-supported library, see [TVFocusGuideView](https://developer.amazon.com/docs/vega-api/latest/tvfocusguideview.html) in the Vega documentation.
 
 Release Notes
 -------------

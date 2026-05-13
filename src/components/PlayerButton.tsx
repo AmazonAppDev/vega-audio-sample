@@ -29,7 +29,7 @@ import FocusableElement from './FocusableElement';
  * @property {string} [testID] - Test identifier for automated testing
  */
 interface PlayerButtonProps {
-  focusableElementRef?: RefObject<TouchableOpacity>;
+  focusableElementRef?: RefObject<React.ComponentRef<typeof TouchableOpacity> | null>;
   onFocus?: () => void;
   onPress: () => void;
   onBlur?: () => void;

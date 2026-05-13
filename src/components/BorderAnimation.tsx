@@ -42,7 +42,7 @@ export function BorderAnimation({
   style,
   duration = ANIMATION_DURATION,
   delay = ANIMATION_DELAY,
-}: BorderAnimatedProps): JSX.Element {
+}: BorderAnimatedProps): React.JSX.Element {
   // make use of useRef to define animation value
   const rotateAnimation = React.useRef(new Animated.Value(0)).current;
 

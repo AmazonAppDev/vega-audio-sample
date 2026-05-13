@@ -29,4 +29,4 @@ jest.mock('./src/w3cmedia/shakaplayer/ShakaPlayer', () => ({
   ShakaPlayer: jest.fn(),
 }));
 
-jest.mock('@amazon-devices/react-linear-gradient', () => 'LinearGradient');
+jest.mock('@amazon-devices/react-linear-gradient', () => 'LinearGradient', { virtual: true });
