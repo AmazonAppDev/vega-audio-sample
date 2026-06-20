@@ -1,6 +1,6 @@
 {
   "name": "@amazon-devices/kepleraudioreferenceapp",
-  "version": "2.22.1",
+  "version": "2.23.0",
   "files": [
     "dist"
   ],
@@ -47,7 +47,7 @@
     "@amazon-devices/react-navigation__drawer": "~2.0.0",
     "@amazon-devices/react-navigation__native": "~2.0.0",
     "@amazon-devices/react-navigation__stack": "~2.0.0",
-    "@amazon-devices/react-native-vector-icons": "~2.0.0",
+    "@amazon-devices/react-native-vector-icons": "~2.1.0",
     "@amazon-devices/kepler-ui-components": "~2.4.0",
     "base-64": "^1.0.0",
     "lodash": "^4.17.21",
