@@ -58,6 +58,9 @@ import { EVENT_KEY_DOWN, EVENT_KEY_UP, RemoteEvent } from '../Constants';
 // Player configuration
 import { DEFAULT_SEEK_SECONDS } from '../screens/Player';
 
+// DPI scaling utility
+import { scaleUxToDp } from '../utils/pixelUtils';
+
 // UI components
 import PlayerButton from './PlayerButton';
 import PlayPauseButton from './PlayPauseButton';
@@ -109,9 +112,12 @@ export const PlaybackControls = ({
   isFocused,
   handleSeek,
 }: Props) => {
-  const seekBackwardRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
-  const seekForwardRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
-  const playPauseRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const seekBackwardRef =
+    useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const seekForwardRef =
+    useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const playPauseRef =
+    useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
 
   useTVEventHandler(({ eventType, eventKeyAction }: HWEvent) => {
     if (!isFocused) {
@@ -165,14 +171,14 @@ export const PlaybackControls = ({
         <PlayerButton
           onPress={onPreviousTrack}
           icon={'skip-previous'}
-          size={70}
+          size={scaleUxToDp(70)}
           testID={'player-btn-previous-track'}
           overrideStyle={styles.seekOverrideStyle}
         />
         <PlayerButton
           onPress={() => handleSeek(-DEFAULT_SEEK_SECONDS)}
           icon={'replay-10'}
-          size={70}
+          size={scaleUxToDp(70)}
           testID={'player-btn-skip-backward'}
           overrideStyle={styles.seekOverrideStyle}
           focusableElementRef={seekBackwardRef}
@@ -187,7 +193,7 @@ export const PlaybackControls = ({
         <PlayerButton
           onPress={() => handleSeek(DEFAULT_SEEK_SECONDS)}
           icon={'forward-10'}
-          size={70}
+          size={scaleUxToDp(70)}
           testID={'player-btn-skip-forward'}
           overrideStyle={styles.seekOverrideStyle}
           focusableElementRef={seekForwardRef}
@@ -196,7 +202,7 @@ export const PlaybackControls = ({
         <PlayerButton
           onPress={onNextTrack}
           icon={'skip-next'}
-          size={70}
+          size={scaleUxToDp(70)}
           testID={'player-btn-next-track'}
           overrideStyle={styles.seekOverrideStyle}
         />
@@ -211,7 +217,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   seekOverrideStyle: {
-    marginHorizontal: 15,
+    marginHorizontal: scaleUxToDp(15),
   },
 });
 

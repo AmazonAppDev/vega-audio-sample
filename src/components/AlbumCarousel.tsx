@@ -15,7 +15,7 @@ import {
 } from '../Constants';
 import { COLORS } from '../styles/Colors';
 import { AlbumCategory, TrackInfo } from '../types/AudioDataTypes';
-import { scale } from '../utils/Scaling';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import AlbumDetailPage from './AlbumDetailPage';
 import BackButton from './BackButton';
 import PlayerButton from './PlayerButton';
@@ -41,14 +41,14 @@ const AlbumCarousel = ({
   const navigation = useNavigation();
   const [currentIndex, setIndex] = useState<number>(selectedAlbumIndex || 0);
   const totalCount: number = albums.length;
-  const previousButtonRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
-  const navigationDestinations: React.ComponentRef<typeof TouchableOpacity>[] = previousButtonRef?.current
-    ? [previousButtonRef?.current]
-    : [];
-  const playerButtonRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
-  const playShuffleDestinations: React.ComponentRef<typeof TouchableOpacity>[] = playerButtonRef?.current
-    ? [playerButtonRef?.current]
-    : [];
+  const previousButtonRef =
+    useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const navigationDestinations: React.ComponentRef<typeof TouchableOpacity>[] =
+    previousButtonRef?.current ? [previousButtonRef?.current] : [];
+  const playerButtonRef =
+    useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
+  const playShuffleDestinations: React.ComponentRef<typeof TouchableOpacity>[] =
+    playerButtonRef?.current ? [playerButtonRef?.current] : [];
 
   const onPreviousButtonPress = () => {
     if (currentIndex > 0) {
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   nextPreviousRow: {
     flexDirection: 'row',
-    marginBottom: scale(3),
+    marginBottom: scaleUxToDp(3),
     alignSelf: 'center',
   },
   viewWidth: {
@@ -159,15 +159,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   playButton: {
-    borderRadius: 50,
-    marginVertical: 25,
+    borderRadius: scaleUxToDp(50),
+    marginVertical: scaleUxToDp(25),
     backgroundColor: COLORS.BG_DRAWER_SELECTED,
-    marginEnd: 20,
+    marginEnd: scaleUxToDp(20),
   },
   nextPrevButton: {
-    borderRadius: 40,
+    borderRadius: scaleUxToDp(40),
     backgroundColor: COLORS.BG_DRAWER_SELECTED,
-    marginEnd: 20,
+    marginEnd: scaleUxToDp(20),
   },
 });
 

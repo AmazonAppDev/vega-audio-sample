@@ -7,11 +7,14 @@
 import { AudioPlayer } from '@amazon-devices/react-native-w3cmedia';
 import React, { RefObject, useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import PlayerButton from './PlayerButton';
 
 type Props = {
   audioRef: React.MutableRefObject<AudioPlayer | null>;
-  focusableElementRef: RefObject<React.ComponentRef<typeof TouchableOpacity> | null>;
+  focusableElementRef: RefObject<React.ComponentRef<
+    typeof TouchableOpacity
+  > | null>;
   onBlur?: () => void;
 };
 
@@ -55,7 +58,7 @@ const PlayPauseButton = ({ audioRef, focusableElementRef, onBlur }: Props) => {
     <PlayerButton
       onPress={togglePlayback}
       icon={playing ? 'pause' : 'play-arrow'}
-      size={70}
+      size={scaleUxToDp(70)}
       overrideStyle={styles.buttonStyle}
       focusableElementRef={focusableElementRef}
       onBlur={onBlur}
@@ -66,7 +69,7 @@ const PlayPauseButton = ({ audioRef, focusableElementRef, onBlur }: Props) => {
 
 const styles = StyleSheet.create({
   buttonStyle: {
-    marginHorizontal: 15,
+    marginHorizontal: scaleUxToDp(15),
   },
 });
 

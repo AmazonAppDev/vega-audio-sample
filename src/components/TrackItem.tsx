@@ -8,6 +8,7 @@ import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { formatTime } from '../Constants';
 import { COLORS } from '../styles/Colors';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import FocusableElement from './FocusableElement';
 
 interface TrackItemProps {
@@ -31,8 +32,8 @@ export const TrackItem = ({ onPress, title, duration }: TrackItemProps) => {
 
 const styles = StyleSheet.create({
   viewContainer: {
-    padding: 10,
-    marginBottom: 10,
+    padding: scaleUxToDp(10),
+    marginBottom: scaleUxToDp(10),
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -42,14 +43,14 @@ const styles = StyleSheet.create({
   },
   txtDuration: {
     color: COLORS.WHITE,
-    fontSize: 22,
+    fontSize: scaleUxToDp(22),
     flex: 1,
-    marginStart: 10,
+    marginStart: scaleUxToDp(10),
     fontWeight: 'bold',
   },
   txtTitle: {
     color: COLORS.WHITE,
-    fontSize: 22,
+    fontSize: scaleUxToDp(22),
     flex: 1,
     fontWeight: 'bold',
   },

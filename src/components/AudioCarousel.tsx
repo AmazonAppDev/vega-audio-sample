@@ -10,6 +10,7 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '../styles/Colors';
 import { AlbumCategory } from '../types/AudioDataTypes';
 import { TilePosition } from '../utils/EnumUtils';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import AudioTile from './AudioTile';
 
 interface AudioCarouselProps {
@@ -89,10 +90,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContentContainer: {
-    height: 300,
+    height: scaleUxToDp(300),
   },
   heading: {
-    fontSize: 36,
+    fontSize: scaleUxToDp(36),
     color: COLORS.LIGHT_GRAY,
   },
 });

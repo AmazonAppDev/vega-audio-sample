@@ -42,7 +42,7 @@ import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { CarouselHeight, dimension } from '../Constants';
 import { COLORS } from '../styles/Colors';
 import { AlbumCategory } from '../types/AudioDataTypes';
-import { scale } from '../utils/Scaling';
+import { scaleUxToDp } from '../utils/pixelUtils';
 
 /** Props for the AlbumDetailPage component */
 interface AlbumDetailPageProps {
@@ -114,31 +114,31 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BLACK_OPACITY,
   },
   albumDetailRow: {
-    height: 210,
-    width: 210,
+    height: scaleUxToDp(210),
+    width: scaleUxToDp(210),
     borderColor: COLORS.WHITE,
-    borderWidth: 2,
-    marginStart: 15,
+    borderWidth: scaleUxToDp(2),
+    marginStart: scaleUxToDp(15),
   },
   albumThumbImage: {
     height: '100%',
     width: '100%',
-    padding: 5,
+    padding: scaleUxToDp(5),
   },
   startMargin: {
-    paddingHorizontal: 30,
+    paddingHorizontal: scaleUxToDp(30),
     flex: 0.7,
   },
   albumTextStyle: {
     color: COLORS.WHITE,
-    fontSize: scale(10),
+    fontSize: scaleUxToDp(10),
     fontWeight: 'bold',
   },
   albumDescStyle: {
     color: COLORS.WHITE,
-    fontSize: 22,
+    fontSize: scaleUxToDp(22),
     fontWeight: 'bold',
-    marginStart: 5,
+    marginStart: scaleUxToDp(5),
   },
 });
 
