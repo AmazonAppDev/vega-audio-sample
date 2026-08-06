@@ -10,6 +10,7 @@
 
 import { StyleSheet } from 'react-native';
 import { HomeSidebarWidth } from '../Constants';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import { COLORS } from './Colors';
 
 const CommonStyles = StyleSheet.create({
@@ -26,32 +27,32 @@ const CommonStyles = StyleSheet.create({
 
   labelStyle: {
     color: COLORS.WHITE,
-    fontSize: 28,
+    fontSize: scaleUxToDp(28),
     alignSelf: 'center',
     fontWeight: '500',
-    marginEnd: 30,
+    marginEnd: scaleUxToDp(30),
   },
 
   drawerStyle: {
     backgroundColor: COLORS.DARKGREY,
     width: HomeSidebarWidth,
     alignContent: 'center',
-    paddingTop: 10,
+    paddingTop: scaleUxToDp(10),
   },
 
   viewStyle: {
-    padding: 10,
-    width: 50,
-    height: 50,
-    marginTop: 30,
+    padding: scaleUxToDp(10),
+    width: scaleUxToDp(50),
+    height: scaleUxToDp(50),
+    marginTop: scaleUxToDp(30),
     alignSelf: 'center',
-    borderRadius: 10,
+    borderRadius: scaleUxToDp(10),
     backgroundColor: 'white',
   },
 
   iconStyle: {
-    width: 30,
-    height: 30,
+    width: scaleUxToDp(30),
+    height: scaleUxToDp(30),
     alignSelf: 'center',
   },
 
@@ -63,7 +64,7 @@ const CommonStyles = StyleSheet.create({
       height: 8,
     },
     shadowOpacity: 0.44,
-    shadowRadius: 10.32,
+    shadowRadius: scaleUxToDp(10.32),
     elevation: 5,
     overflow: 'hidden',
   },
@@ -71,21 +72,21 @@ const CommonStyles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: COLORS.DARKGREY,
-    padding: 10,
+    padding: scaleUxToDp(10),
   },
 
   listStyle: {
-    marginHorizontal: 20,
+    marginHorizontal: scaleUxToDp(20),
   },
 
   titleText: {
     color: COLORS.WHITE,
-    fontSize: 30,
+    fontSize: scaleUxToDp(30),
   },
 
   focusStyle: {
     borderColor: COLORS.GRAY,
-    borderWidth: 3,
+    borderWidth: scaleUxToDp(3),
   },
 });
 export default CommonStyles;

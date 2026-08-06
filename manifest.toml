@@ -7,11 +7,16 @@ schema-version = 1
 
 [package]
 title = "Vega Audio Sample App"
-version = "2.22.1"
+version = "3.24.0"
 id = "com.amazondeveloper.kepleraudioreferenceapp"
 icon = "@image/audio-app-dark.png"
 
 ## The [components] section declares the application components in the package, including interactive, service, and task components. 
+
+[os.version]
+min = "1.2"
+target = "1.2"
+
 [components]
 [[components.interactive]]
 id = "com.amazondeveloper.kepleraudioreferenceapp.main"
@@ -25,6 +30,10 @@ launch-type = "singleton"
 id = "/com.amazon.kepler.media.control.server@IMediaControlServerComponentAsync"
 
 ## The [wants] section declares the capabilities that are optional for the application to function on a Vega device. Handle graceful fallbacks in your application code if a feature in this list is unavailable on a device.
+
+[[needs.module]]
+id = "/com.amazon.vega.os@IVega_1_2"
+
 [wants]
 [[wants.service]]
 id = "com.amazon.gipc.uuid.*"
@@ -52,7 +61,6 @@ id = "com.amazon.mediabuffer.service"
   		  
 [[wants.service]]
 id = "com.amazon.mediatransform.service"
-
 
 ## The [offers] section declares the capabilities that an application package offers to other application packages installed on a Vega OS system. Offers is an optional section.
 [offers]

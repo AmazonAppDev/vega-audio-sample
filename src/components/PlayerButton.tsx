@@ -13,6 +13,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { COLORS } from '../styles/Colors';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import FocusableElement from './FocusableElement';
 
 /**
@@ -29,7 +30,9 @@ import FocusableElement from './FocusableElement';
  * @property {string} [testID] - Test identifier for automated testing
  */
 interface PlayerButtonProps {
-  focusableElementRef?: RefObject<React.ComponentRef<typeof TouchableOpacity> | null>;
+  focusableElementRef?: RefObject<React.ComponentRef<
+    typeof TouchableOpacity
+  > | null>;
   onFocus?: () => void;
   onPress: () => void;
   onBlur?: () => void;
@@ -108,8 +111,8 @@ export const PlayerButton = ({
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    padding: 20,
-    marginBottom: 20,
+    padding: scaleUxToDp(20),
+    marginBottom: scaleUxToDp(20),
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',

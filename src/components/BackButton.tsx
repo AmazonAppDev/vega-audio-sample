@@ -8,6 +8,7 @@ import MaterialIcons from '@amazon-devices/react-native-vector-icons/MaterialIco
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../styles/Colors';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import FocusableElement from './FocusableElement';
 
 interface BackButtonProps {
@@ -23,7 +24,11 @@ const BackButton = ({ onPress, hasTVPreferredFocus }: BackButtonProps) => {
       hasTVPreferredFocus={hasTVPreferredFocus}
       onPress={onPress}
     >
-      <MaterialIcons name={'chevron-left'} size={70} color={COLORS.WHITE} />
+      <MaterialIcons
+        name={'chevron-left'}
+        size={scaleUxToDp(70)}
+        color={COLORS.WHITE}
+      />
     </FocusableElement>
   );
 };
@@ -32,12 +37,12 @@ const styles = StyleSheet.create({
   backButtonContainer: {
     alignItems: 'center',
     flexDirection: 'row',
-    width: 80,
-    height: 80,
+    width: scaleUxToDp(80),
+    height: scaleUxToDp(80),
   },
   backButtonFocus: {
     backgroundColor: COLORS.GREEN,
-    borderRadius: 40,
+    borderRadius: scaleUxToDp(40),
   },
 });
 

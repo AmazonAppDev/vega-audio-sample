@@ -11,9 +11,10 @@
 import moment from 'moment';
 import { Dimensions, Platform } from 'react-native';
 import { isLargeScreen } from './utils/ScreenSizing';
+import { scaleUxToDp } from './utils/pixelUtils';
 
 // Layout dimensions
-export const HomeSidebarWidth = Platform.isTV ? 350 : 200;
+export const HomeSidebarWidth = Platform.isTV ? 250 : 200;
 
 // Image asset imports
 export const MUSIC_ICON = require('./assets/images/music-note.png');
@@ -25,8 +26,8 @@ export const TitleFontSize = isLargeScreen ? 20 : 13;
 export const HeaderFontSize = isLargeScreen ? 26 : 18;
 
 // UI element sizes
-export const SizeNavigationButtons = 40;
-export const SizePlayshuffleButtons = 60;
+export const SizeNavigationButtons = scaleUxToDp(40);
+export const SizePlayshuffleButtons = scaleUxToDp(60);
 
 // Layout proportions
 export const CarouselHeight = isLargeScreen ? '30%' : '40%';

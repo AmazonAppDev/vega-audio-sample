@@ -52,7 +52,8 @@ import { TrackInfo } from '../types/AudioDataTypes';
 import { AppStackScreenProps } from '../types/Types';
 import { useAudioHandler } from '../utils/AudioHandler';
 import { Screens } from '../utils/EnumUtils';
-import { moderateScale, scale } from '../utils/Scaling';
+import { scaleUxToDp } from '../utils/pixelUtils';
+import { moderateScale } from '../utils/Scaling';
 
 // Player configuration constants
 const UPDATE_PROGRESS_DELAY = 1000; // Progress update interval (ms)
@@ -83,8 +84,17 @@ const Player = ({
   const [seekFocused, setSeekFocused] = useState(false); // Seek bar focus state
 
   // Progress tracking
-  const [progress, setProgressValue] = useState(0);
+  const [progress, setProgressValueRaw] = useState(0);
   const progressResetRef = useRef<boolean>(false); // Prevents auto-advance during track transitions
+  const seekingRef = useRef<boolean>(false); // Prevents stale progress updates during seek
+  const setProgressValue = useCallback(
+    (value: number | ((prev: number) => number)) => {
+      if (!seekingRef.current) {
+        setProgressValueRaw(value);
+      }
+    },
+    [],
+  );
 
   const lastIndex = albumTrackData.length - 1; // Last track index for boundary checks
 
@@ -176,11 +186,12 @@ const Player = ({
     lastIndex,
     navigateBack,
     nextContent.index,
+    setProgressValue,
   ]);
 
   useEffect(() => {
     const updateProgress = () => {
-      if (audioRef.current) {
+      if (audioRef.current && !seekingRef.current) {
         const currentTime = audioRef.current.currentTime * TIME_IN_SECONDS;
         const duration = audioRef.current.duration * TIME_IN_SECONDS;
 
@@ -228,7 +239,10 @@ const Player = ({
       };
 
       if (Platform.isTV) {
-        const subscription = BackHandler.addEventListener('hardwareBackPress', backHandlerCallback);
+        const subscription = BackHandler.addEventListener(
+          'hardwareBackPress',
+          backHandlerCallback,
+        );
         return () => {
           subscription.remove();
         };
@@ -261,7 +275,13 @@ const Player = ({
       isAdvancingTrack.current = false;
       navigateBack(); // Exit player when at first track
     }
-  }, [albumTrackData, endCurrentSong, navigateBack, nextContent.index]);
+  }, [
+    albumTrackData,
+    endCurrentSong,
+    navigateBack,
+    nextContent.index,
+    setProgressValue,
+  ]);
 
   useEffect(() => {
     if (context.isSongEnded && progress > 0) {
@@ -327,7 +347,12 @@ const Player = ({
 
         // Update currentTime only if newTime is valid
         if (newTime >= 0) {
+          seekingRef.current = true;
           audioRef.current.currentTime = newTime;
+          setProgressValueRaw(newTime * TIME_IN_SECONDS);
+          setTimeout(() => {
+            seekingRef.current = false;
+          }, 1500);
         }
       }
     },
@@ -338,6 +363,7 @@ const Player = ({
       nextContent.index,
       endCurrentSong,
       lastIndex,
+      setProgressValue,
     ],
   );
 
@@ -404,7 +430,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: COLORS.DARKGREY,
-    padding: scale(5),
+    padding: scaleUxToDp(27),
   },
   playerMainView: {
     flex: 1,
@@ -413,7 +439,7 @@ const styles = StyleSheet.create({
     flex: 0.7,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: scale(5),
+    paddingTop: scaleUxToDp(27),
   },
   trackArt: {
     borderRadius: moderateScale(TRACK_ART_SIZE / 2),
@@ -422,19 +448,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderColor: COLORS.WHITE,
-    borderWidth: 2,
-    marginBottom: 30,
+    borderWidth: scaleUxToDp(2),
+    marginBottom: scaleUxToDp(30),
   },
   trackTitle: {
-    fontSize: scale(10),
+    fontSize: scaleUxToDp(55),
     fontWeight: 'bold',
     color: COLORS.WHITE,
-    marginTop: 20,
+    marginTop: scaleUxToDp(20),
   },
   albumName: {
-    fontSize: scale(5),
+    fontSize: scaleUxToDp(27),
     fontWeight: 'bold',
     color: COLORS.WHITE,
-    marginTop: 10,
+    marginTop: scaleUxToDp(10),
   },
 });

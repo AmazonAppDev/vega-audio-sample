@@ -8,6 +8,7 @@ import React, { memo, useCallback, useRef, useState } from 'react';
 import { Animated, Image, StyleSheet, Text, View } from 'react-native';
 import { AlbumCategory } from '../types/AudioDataTypes';
 import { TilePosition } from '../utils/EnumUtils';
+import { scaleUxToDp } from '../utils/pixelUtils';
 import { BorderAnimation } from './BorderAnimation';
 import FocusableElement from './FocusableElement';
 
@@ -101,15 +102,15 @@ const dynamicStyles = (tilePosition: TilePosition) => {
 
   return StyleSheet.create({
     tileContainer: {
-      width: 240,
-      borderRadius: 12,
-      marginRight: marginRight,
-      marginLeft: marginLeft,
+      width: scaleUxToDp(240),
+      borderRadius: scaleUxToDp(12),
+      marginRight: scaleUxToDp(marginRight),
+      marginLeft: scaleUxToDp(marginLeft),
       overflow: 'hidden',
       alignItems: 'center',
       justifyContent: 'center',
       alignSelf: 'center',
-      marginTop: 18,
+      marginTop: scaleUxToDp(18),
     },
     tileView: {
       height: '93%',
@@ -119,19 +120,19 @@ const dynamicStyles = (tilePosition: TilePosition) => {
       height: '100%',
       width: '100%',
       alignSelf: 'center',
-      borderRadius: 5,
+      borderRadius: scaleUxToDp(5),
     },
     animationView: {
-      height: 400,
-      width: 400,
+      height: scaleUxToDp(400),
+      width: scaleUxToDp(400),
       position: 'absolute',
     },
     albumNameStyle: {
       alignSelf: 'center',
       position: 'absolute',
       color: 'white',
-      fontSize: 18,
-      bottom: 10,
+      fontSize: scaleUxToDp(18),
+      bottom: scaleUxToDp(10),
       fontWeight: '500',
     },
   });

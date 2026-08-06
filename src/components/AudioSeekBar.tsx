@@ -7,7 +7,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { DEFAULT_PROGRESS_TIME, formatTime } from '../Constants';
 import { COLORS } from '../styles/Colors';
-import { scale } from '../utils/Scaling';
+import { scaleUxToDp } from '../utils/pixelUtils';
 
 type Props = {
   totalDuration: number;
@@ -30,7 +30,7 @@ const AudioSeekBar = ({
 }: Props) => {
   const renderThumbIcon = () => {
     if (isBuffering) {
-      return <ActivityIndicator size="small" color="white" />;
+      return <ActivityIndicator size={scaleUxToDp(100)} color="white" />;
     }
     return <View style={styles.thumbIconStyle} />;
   };
@@ -72,13 +72,13 @@ const styles = StyleSheet.create({
   },
   durationTime: {
     color: COLORS.WHITE,
-    marginHorizontal: scale(3),
-    fontSize: 15,
+    marginHorizontal: scaleUxToDp(10),
+    fontSize: scaleUxToDp(20),
   },
   sliderStyle: {
     flex: 1,
     alignSelf: 'center',
-    borderRadius: 10,
+    borderRadius: scaleUxToDp(10),
   },
   focusedSliderStyle: {
     borderWidth: 1,
@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
     borderColor: COLORS.WHITE,
     flex: 1,
     alignSelf: 'center',
-    borderRadius: 10,
+    borderRadius: scaleUxToDp(10),
   },
   thumbIconStyle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: scaleUxToDp(30),
+    height: scaleUxToDp(30),
+    borderRadius: scaleUxToDp(15),
     backgroundColor: COLORS.GREEN,
   },
   styleSeek: {
