@@ -14,8 +14,8 @@ icon = "@image/audio-app-dark.png"
 ## The [components] section declares the application components in the package, including interactive, service, and task components. 
 
 [os.version]
-min = "1.2"
-target = "1.2"
+min = "2.0"
+target = "2.0"
 
 [components]
 [[components.interactive]]
@@ -30,9 +30,6 @@ launch-type = "singleton"
 id = "/com.amazon.kepler.media.control.server@IMediaControlServerComponentAsync"
 
 ## The [wants] section declares the capabilities that are optional for the application to function on a Vega device. Handle graceful fallbacks in your application code if a feature in this list is unavailable on a device.
-
-[[needs.module]]
-id = "/com.amazon.vega.os@IVega_1_2"
 
 [wants]
 [[wants.service]]
