@@ -26,6 +26,14 @@ type Props = {
  * currentValue creates a second writer for the same value and an echo loop
  * between the SeekBar's thumbValue/currentValue effects, which can re-render
  * forever and get the app killed as AppNotResponding.
+ *
+ * The remote's Fast forward and Rewind keys are handled through Media Controls
+ * (AppOverrideMediaControlHandler), which moves the player by 10 s; the thumb
+ * follows through the player's progress updates. With step={0} the SeekBar's
+ * own Fast forward/Rewind and long-press stepping do not move the thumb, and
+ * Media Controls stays the only writer for these keys. Long-press
+ * acceleration was never enabled here (enableLongPressAcceleration defaults
+ * to false).
  */
 const AudioSeekBar = ({
   totalDuration,
