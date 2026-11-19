@@ -16,9 +16,17 @@ type Props = {
   onFocus: () => void;
   isFocused: boolean;
   isBuffering?: boolean;
-  onValueChange: (value: number) => void;
 };
 
+/**
+ * Display-only seek bar. Seeking is owned by Player.handleSeek (D-pad Left/Right
+ * while this bar is focused), so the SeekBar does not step on its own (step={0})
+ * and its thumb value is intentionally NOT fed back into `progress` via
+ * onValueChange. Wiring onValueChange back into
+ * currentValue creates a second writer for the same value and an echo loop
+ * between the SeekBar's thumbValue/currentValue effects, which can re-render
+ * forever and get the app killed as AppNotResponding.
+ */
 const AudioSeekBar = ({
   totalDuration,
   onFocus,
@@ -26,7 +34,6 @@ const AudioSeekBar = ({
   progress,
   isFocused,
   isBuffering,
-  onValueChange,
 }: Props) => {
   const renderThumbIcon = () => {
     if (isBuffering) {
@@ -43,16 +50,16 @@ const AudioSeekBar = ({
       <TVFocusGuideView trapFocusLeft trapFocusRight style={styles.styleSeek}>
         <SeekBar
           currentValue={progress}
-          step={1000}
+          // step={0}: the SeekBar must not move its own thumb on Left/Right.
+          // Player.handleSeek owns D-pad seeking; a non-zero step makes the
+          // thumb move 1 s and then jump to the app's 10 s seek (stutter).
+          step={0}
           onFocus={onFocus}
           onBlur={onBlur}
           barStyle={isFocused ? styles.focusedSliderStyle : styles.sliderStyle}
           totalValue={totalDuration}
           currentValueIndicatorColor={COLORS.GRAY}
           thumbIcon={renderThumbIcon()}
-          onValueChange={value => {
-            onValueChange(value);
-          }}
         />
       </TVFocusGuideView>
       <Text style={styles.durationTime} testID="player-total-duration">

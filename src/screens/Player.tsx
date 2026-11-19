@@ -87,6 +87,25 @@ const Player = ({
   const [progress, setProgressValueRaw] = useState(0);
   const progressResetRef = useRef<boolean>(false); // Prevents auto-advance during track transitions
   const seekingRef = useRef<boolean>(false); // Prevents stale progress updates during seek
+  // Handle of the pending timer that reopens the seek gate. Only the most recent
+  // seek may reopen it; older timers are cancelled so they cannot reopen the gate
+  // right after a newer seek closed it.
+  const seekGateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Last seek target (seconds) while a burst of seeks is still settling. Fast
+  // presses build on this instead of audio.currentTime, which may not have
+  // landed yet and would make the thumb bounce back.
+  const pendingSeekTargetRef = useRef<number | null>(null);
+  // Ends any in-flight seek: cancels the gate timer, reopens the gate and
+  // forgets the pending target. Used at track boundaries so the next track's
+  // setProgressValue(0) is not dropped by a still-closed gate.
+  const resetSeekState = useCallback(() => {
+    if (seekGateTimerRef.current) {
+      clearTimeout(seekGateTimerRef.current);
+      seekGateTimerRef.current = null;
+    }
+    seekingRef.current = false;
+    pendingSeekTargetRef.current = null;
+  }, []);
   const setProgressValue = useCallback(
     (value: number | ((prev: number) => number)) => {
       if (!seekingRef.current) {
@@ -143,6 +162,7 @@ const Player = ({
     return () => {
       context.setIsAudioStarted(false);
       changeSubscription.remove();
+      resetSeekState();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -171,6 +191,7 @@ const Player = ({
       setNextContent({ index: newIndex });
       setAudioInfo(albumTrackData[newIndex]);
       progressResetRef.current = true;
+      resetSeekState();
       setProgressValue(0);
       setTimeout(() => {
         progressResetRef.current = false;
@@ -186,6 +207,7 @@ const Player = ({
     lastIndex,
     navigateBack,
     nextContent.index,
+    resetSeekState,
     setProgressValue,
   ]);
 
@@ -266,6 +288,7 @@ const Player = ({
       setNextContent({ index: newIndex });
       setAudioInfo(albumTrackData[newIndex]);
       progressResetRef.current = true;
+      resetSeekState();
       setProgressValue(0);
       setTimeout(() => {
         progressResetRef.current = false;
@@ -280,6 +303,7 @@ const Player = ({
     endCurrentSong,
     navigateBack,
     nextContent.index,
+    resetSeekState,
     setProgressValue,
   ]);
 
@@ -311,14 +335,17 @@ const Player = ({
       if (typeof audioRef?.current?.currentTime === 'number') {
         const { currentTime, duration } = audioRef.current;
         const bufferTime = 1000; // 1 seconds buffer
+        // Build on the last requested target during a burst of presses;
+        // audio.currentTime may still hold the pre-seek position.
+        const basePosition = pendingSeekTargetRef.current ?? currentTime;
 
         // Prevent seeking if within the first 3 seconds
-        if (currentTime < bufferTime / TIME_IN_SECONDS) {
+        if (basePosition < bufferTime / TIME_IN_SECONDS) {
           return;
         }
 
         // Calculate new time
-        const newTime = currentTime + seekSeconds;
+        const newTime = basePosition + seekSeconds;
 
         // Ensure newTime is within valid range
         if (newTime >= duration) {
@@ -330,6 +357,7 @@ const Player = ({
             setAudioInfo(albumTrackData[newIndex]);
             // Reset progress to prevent updateProgress from triggering onNextTrack
             progressResetRef.current = true;
+            resetSeekState();
             setProgressValue(0);
             // Reset the flag after a short delay
             setTimeout(() => {
@@ -348,10 +376,18 @@ const Player = ({
         // Update currentTime only if newTime is valid
         if (newTime >= 0) {
           seekingRef.current = true;
+          pendingSeekTargetRef.current = newTime;
           audioRef.current.currentTime = newTime;
           setProgressValueRaw(newTime * TIME_IN_SECONDS);
-          setTimeout(() => {
+          // Cancel the previous seek's gate timer so a stale timer cannot
+          // reopen the gate while this newer seek is still settling.
+          if (seekGateTimerRef.current) {
+            clearTimeout(seekGateTimerRef.current);
+          }
+          seekGateTimerRef.current = setTimeout(() => {
             seekingRef.current = false;
+            seekGateTimerRef.current = null;
+            pendingSeekTargetRef.current = null;
           }, 1500);
         }
       }
@@ -363,6 +399,7 @@ const Player = ({
       nextContent.index,
       endCurrentSong,
       lastIndex,
+      resetSeekState,
       setProgressValue,
     ],
   );
@@ -406,7 +443,6 @@ const Player = ({
                 onBlur={() => setSeekFocused(false)}
                 isFocused={seekFocused}
                 isBuffering={isBuffering}
-                onValueChange={setProgressValue}
               />
 
               <PlaybackControls

@@ -19,8 +19,9 @@ type Props = {
 };
 
 const PlayPauseButton = ({ audioRef, focusableElementRef, onBlur }: Props) => {
+  // Lazy initializer: read audio state once on mount, not on every render.
   const [playing, setPlaying] = useState(
-    !audioRef.current?.paused && !audioRef.current?.ended,
+    () => !audioRef.current?.paused && !audioRef.current?.ended,
   );
 
   useEffect(() => {
