@@ -16,7 +16,6 @@ type Props = {
   onFocus: () => void;
   isFocused: boolean;
   isBuffering?: boolean;
-  onValueChange: (value: number) => void;
 };
 
 const AudioSeekBar = ({
@@ -26,7 +25,6 @@ const AudioSeekBar = ({
   progress,
   isFocused,
   isBuffering,
-  onValueChange,
 }: Props) => {
   const renderThumbIcon = () => {
     if (isBuffering) {
@@ -43,16 +41,13 @@ const AudioSeekBar = ({
       <TVFocusGuideView trapFocusLeft trapFocusRight style={styles.styleSeek}>
         <SeekBar
           currentValue={progress}
-          step={1000}
+          step={0}
           onFocus={onFocus}
           onBlur={onBlur}
           barStyle={isFocused ? styles.focusedSliderStyle : styles.sliderStyle}
           totalValue={totalDuration}
           currentValueIndicatorColor={COLORS.GRAY}
           thumbIcon={renderThumbIcon()}
-          onValueChange={value => {
-            onValueChange(value);
-          }}
         />
       </TVFocusGuideView>
       <Text style={styles.durationTime} testID="player-total-duration">

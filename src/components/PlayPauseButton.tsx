@@ -20,7 +20,7 @@ type Props = {
 
 const PlayPauseButton = ({ audioRef, focusableElementRef, onBlur }: Props) => {
   const [playing, setPlaying] = useState(
-    !audioRef.current?.paused && !audioRef.current?.ended,
+    () => !audioRef.current?.paused && !audioRef.current?.ended,
   );
 
   useEffect(() => {
