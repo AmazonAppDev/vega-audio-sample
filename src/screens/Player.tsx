@@ -54,6 +54,7 @@ import { useAudioHandler } from '../utils/AudioHandler';
 import { Screens } from '../utils/EnumUtils';
 import { scaleUxToDp } from '../utils/pixelUtils';
 import { moderateScale } from '../utils/Scaling';
+import { SeekGate } from '../utils/SeekGate';
 
 // Player configuration constants
 const UPDATE_PROGRESS_DELAY = 1000; // Progress update interval (ms)
@@ -86,33 +87,16 @@ const Player = ({
   // Progress tracking
   const [progress, setProgressValueRaw] = useState(0);
   const progressResetRef = useRef<boolean>(false); // Prevents auto-advance during track transitions
-  const seekingRef = useRef<boolean>(false); // Prevents stale progress updates during seek
-  // Handle of the pending timer that reopens the seek gate. Only the most recent
-  // seek may reopen it; older timers are cancelled so they cannot reopen the gate
-  // right after a newer seek closed it.
-  const seekGateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Last seek target (seconds) while a burst of seeks is still settling. Fast
-  // presses build on this instead of audio.currentTime, which may not have
-  // landed yet and would make the thumb bounce back.
-  const pendingSeekTargetRef = useRef<number | null>(null);
-  // Ends any in-flight seek: cancels the gate timer, reopens the gate and
-  // forgets the pending target. Used at track boundaries so the next track's
+  const [seekGate] = useState(() => new SeekGate());
   // setProgressValue(0) is not dropped by a still-closed gate.
-  const resetSeekState = useCallback(() => {
-    if (seekGateTimerRef.current) {
-      clearTimeout(seekGateTimerRef.current);
-      seekGateTimerRef.current = null;
-    }
-    seekingRef.current = false;
-    pendingSeekTargetRef.current = null;
-  }, []);
+  const resetSeekState = useCallback(() => seekGate.reset(), [seekGate]);
   const setProgressValue = useCallback(
     (value: number | ((prev: number) => number)) => {
-      if (!seekingRef.current) {
+      if (!seekGate.isClosed()) {
         setProgressValueRaw(value);
       }
     },
-    [],
+    [seekGate],
   );
 
   const lastIndex = albumTrackData.length - 1; // Last track index for boundary checks
@@ -213,7 +197,10 @@ const Player = ({
 
   useEffect(() => {
     const updateProgress = () => {
-      if (audioRef.current && !seekingRef.current) {
+      if (audioRef.current) {
+        seekGate.noteTime(audioRef.current.currentTime);
+      }
+      if (audioRef.current && !seekGate.isClosed()) {
         const currentTime = audioRef.current.currentTime * TIME_IN_SECONDS;
         const duration = audioRef.current.duration * TIME_IN_SECONDS;
 
@@ -337,7 +324,7 @@ const Player = ({
         const bufferTime = 1000; // 1 seconds buffer
         // Build on the last requested target during a burst of presses;
         // audio.currentTime may still hold the pre-seek position.
-        const basePosition = pendingSeekTargetRef.current ?? currentTime;
+        const basePosition = seekGate.basePosition(currentTime);
 
         // Prevent seeking if within the first 3 seconds
         if (basePosition < bufferTime / TIME_IN_SECONDS) {
@@ -375,20 +362,9 @@ const Player = ({
 
         // Update currentTime only if newTime is valid
         if (newTime >= 0) {
-          seekingRef.current = true;
-          pendingSeekTargetRef.current = newTime;
+          seekGate.begin(newTime);
           audioRef.current.currentTime = newTime;
           setProgressValueRaw(newTime * TIME_IN_SECONDS);
-          // Cancel the previous seek's gate timer so a stale timer cannot
-          // reopen the gate while this newer seek is still settling.
-          if (seekGateTimerRef.current) {
-            clearTimeout(seekGateTimerRef.current);
-          }
-          seekGateTimerRef.current = setTimeout(() => {
-            seekingRef.current = false;
-            seekGateTimerRef.current = null;
-            pendingSeekTargetRef.current = null;
-          }, 1500);
         }
       }
     },
@@ -400,6 +376,7 @@ const Player = ({
       endCurrentSong,
       lastIndex,
       resetSeekState,
+      seekGate,
       setProgressValue,
     ],
   );
