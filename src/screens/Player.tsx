@@ -87,11 +87,7 @@ const Player = ({
   // Progress tracking
   const [progress, setProgressValueRaw] = useState(0);
   const progressResetRef = useRef<boolean>(false); // Prevents auto-advance during track transitions
-  // Gate for D-pad seeks: ignores stale progress while a seek settles and
-  // tracks the pending target during a burst of presses. See SeekGate.
   const [seekGate] = useState(() => new SeekGate());
-  // Ends any in-flight seek. Used at track boundaries so the next track's
-  // setProgressValue(0) is not dropped by a still-closed gate.
   const resetSeekState = useCallback(() => seekGate.reset(), [seekGate]);
   const setProgressValue = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -200,7 +196,6 @@ const Player = ({
 
   useEffect(() => {
     const updateProgress = () => {
-      // Drop the pending seek target once playback has reached it.
       if (audioRef.current) {
         seekGate.noteTime(audioRef.current.currentTime);
       }
@@ -326,8 +321,6 @@ const Player = ({
       if (typeof audioRef?.current?.currentTime === 'number') {
         const { currentTime, duration } = audioRef.current;
         const bufferTime = 1000; // 1 seconds buffer
-        // Build on the last requested target during a burst of presses;
-        // audio.currentTime may still hold the pre-seek position.
         const basePosition = seekGate.basePosition(currentTime);
 
         // Prevent seeking if within the first 3 seconds
@@ -366,8 +359,6 @@ const Player = ({
 
         // Update currentTime only if newTime is valid
         if (newTime >= 0) {
-          // Closing the gate also cancels the previous seek's timer, so a
-          // stale timer cannot reopen it while this seek is still settling.
           seekGate.begin(newTime);
           audioRef.current.currentTime = newTime;
           setProgressValueRaw(newTime * TIME_IN_SECONDS);

@@ -18,23 +18,6 @@ type Props = {
   isBuffering?: boolean;
 };
 
-/**
- * Display-only seek bar. Seeking is owned by Player.handleSeek (D-pad Left/Right
- * while this bar is focused), so the SeekBar does not step on its own (step={0})
- * and its thumb value is intentionally NOT fed back into `progress` via
- * onValueChange. Wiring onValueChange back into
- * currentValue creates a second writer for the same value and an echo loop
- * between the SeekBar's thumbValue/currentValue effects, which can re-render
- * forever and get the app killed as AppNotResponding.
- *
- * The remote's Fast forward and Rewind keys are handled through Media Controls
- * (AppOverrideMediaControlHandler), which moves the player by 10 s; the thumb
- * follows through the player's progress updates. With step={0} the SeekBar's
- * own Fast forward/Rewind and long-press stepping do not move the thumb, and
- * Media Controls stays the only writer for these keys. Long-press
- * acceleration was never enabled here (enableLongPressAcceleration defaults
- * to false).
- */
 const AudioSeekBar = ({
   totalDuration,
   onFocus,
@@ -58,9 +41,6 @@ const AudioSeekBar = ({
       <TVFocusGuideView trapFocusLeft trapFocusRight style={styles.styleSeek}>
         <SeekBar
           currentValue={progress}
-          // step={0}: the SeekBar must not move its own thumb on Left/Right.
-          // Player.handleSeek owns D-pad seeking; a non-zero step makes the
-          // thumb move 1 s and then jump to the app's 10 s seek (stutter).
           step={0}
           onFocus={onFocus}
           onBlur={onBlur}
